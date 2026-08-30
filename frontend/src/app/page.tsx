@@ -130,7 +130,7 @@ export default function Home() {
         <div className="bg-gradient-to-br from-emerald-900/30 to-gray-900 rounded-2xl p-12 border border-emerald-800/30">
           <h2 className="text-3xl font-bold text-white mb-4">Own a Restaurant?</h2>
           <p className="text-gray-400 max-w-xl mx-auto mb-8 text-lg">
-            Join ReserveEase and reach more customers. Manage reservations, tables, and staff all in one place.
+            Join ReserveET and reach more customers. Manage reservations, tables, and staff all in one place.
           </p>
           <Link
             href="/register"
