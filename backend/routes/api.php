@@ -63,7 +63,7 @@ Route::middleware(['auth:api', StaffMiddleware::class])
 Route::middleware(['auth:api', StaffMiddleware::class])
     ->put('reservations/{reservation}/status', [ReservationController::class, 'updateStatus']);
 
-// Review routes
+// Review route
 Route::get('restaurants/{restaurant}/reviews', [ReviewController::class, 'index']);
 
 Route::middleware('auth:api')->group(function () {
