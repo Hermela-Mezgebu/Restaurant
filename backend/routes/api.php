@@ -28,14 +28,26 @@ Route::prefix('auth')->group(function () {
 Route::get('restaurants', [RestaurantController::class, 'index']);
 Route::get('restaurants/{restaurant}', [RestaurantController::class, 'show']);
 
-// Restaurant routes (authenticated + staff/admin or owner)
-Route::middleware('auth:api')->group(function () {
-    Route::post('restaurants', [RestaurantController::class, 'store'])
-        ->middleware(StaffMiddleware::class);
+/*
+|--------------------------------------------------------------------------
+| Protected Restaurant Routes
+|--------------------------------------------------------------------------
+*/
 
-    Route::put('restaurants/{restaurant}', [RestaurantController::class, 'update']);
-    Route::delete('restaurants/{restaurant}', [RestaurantController::class, 'destroy'])
-        ->middleware(AdminMiddleware::class);
+Route::middleware('auth:sanctum')->group(function () {
+
+    Route::post('/restaurants', [RestaurantController::class, 'store']);
+
+    Route::put('/restaurants/{restaurant}', [
+        RestaurantController::class,
+        'update'
+    ]);
+
+    Route::delete('/restaurants/{restaurant}', [
+        RestaurantController::class,
+        'destroy'
+    ]);
+
 });
 
 // Table routes (staff/admin)

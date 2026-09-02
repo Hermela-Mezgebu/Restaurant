@@ -38,10 +38,24 @@ export const getToken = () => {
   return localStorage.getItem('token');
 };
 
-export const getUser = (): User | null => {
-  if (typeof window === 'undefined') return null;
+export const getUser = () => {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
   const user = localStorage.getItem('user');
-  return user ? JSON.parse(user) : null;
+
+  if (!user || user === 'undefined' || user === 'null') {
+    return null;
+  }
+
+  try {
+    return JSON.parse(user);
+  } catch (error) {
+    console.error('Invalid user data in localStorage:', error);
+    localStorage.removeItem('user');
+    return null;
+  }
 };
 
 export const isAuthenticated = () => !!getToken();
