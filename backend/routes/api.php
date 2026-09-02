@@ -55,7 +55,7 @@ Route::middleware('auth:api')->group(function () {
     Route::delete('reservations/{reservation}', [ReservationController::class, 'destroy']);
 });
 
-// Restaurant reservations (staff)
+// Restaurant reservation (staff)
 Route::middleware(['auth:api', StaffMiddleware::class])
     ->get('restaurants/{restaurant}/reservations', [ReservationController::class, 'restaurantReservations']);
 
