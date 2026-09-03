@@ -29,46 +29,70 @@ class ReservationController extends Controller
         return $this->successResponse(ReservationResource::collection($reservations));
     }
 
-    public function store(StoreReservationRequest $request): JsonResponse
-    {
-        $data = $request->validated();
-        $data['user_id'] = auth()->id();
-        $data['status'] = 'pending';
+public function store(StoreReservationRequest $request): JsonResponse
+{
+    $data = $request->validated();
 
-        return DB::transaction(function () use ($data) {
-            if (isset($data['table_id'])) {
-                $table = RestaurantTable::where('id', $data['table_id'])
-                    ->where('restaurant_id', $data['restaurant_id'])
-                    ->where('status', 'available')
-                    ->lockForUpdate()
-                    ->first();
+    $data['user_id'] = auth()->id();
+    $data['status'] = 'pending';
 
-                if (!$table) {
-                    return $this->errorResponse('Selected table is not available.', 422);
-                }
+    return DB::transaction(function () use ($data) {
+        $table = RestaurantTable::where('id', $data['table_id'])
+            ->where('restaurant_id', $data['restaurant_id'])
+            ->where('status', 'available')
+            ->lockForUpdate()
+            ->first();
 
-                if ($table->capacity < $data['party_size']) {
-                    return $this->errorResponse('Table capacity is too small for the party size.', 422);
-                }
+        if (!$table) {
+            return $this->errorResponse(
+                'Selected table is not available.',
+                422
+            );
+        }
 
-                $conflicting = Reservation::where('table_id', $data['table_id'])
-                    ->where('reservation_date', $data['reservation_date'])
-                    ->where('reservation_time', $data['reservation_time'])
-                    ->whereIn('status', ['pending', 'confirmed', 'seated','declined'])
-                    ->lockForUpdate()
-                    ->exists();
+        // Make sure the table can accommodate the party.
+        if ($table->capacity < $data['party_size']) {
+            return $this->errorResponse(
+                'Table capacity is too small for the party size.',
+                422
+            );
+        }
 
-                if ($conflicting) {
-                    return $this->errorResponse('Table is already reserved for this time slot.', 422);
-                }
-            }
+        // Check for an existing active reservation
+        // for this exact table/date/time.
+        $conflicting = Reservation::where('table_id', $data['table_id'])
+            ->where('reservation_date', $data['reservation_date'])
+            ->where('reservation_time', $data['reservation_time'])
+            ->whereIn('status', [
+                'pending',
+                'confirmed',
+                'seated',
+            ])
+            ->whereNull('deleted_at')
+            ->exists();
 
-            $reservation = Reservation::create($data);
-            $reservation->load(['user', 'table', 'restaurant']);
+        if ($conflicting) {
+            return $this->errorResponse(
+                'Table is already reserved for this date and time.',
+                409
+            );
+        }
 
-            return $this->successResponse(new ReservationResource($reservation), 'Reservation created', 201);
-        });
-    }
+        $reservation = Reservation::create($data);
+
+        $reservation->load([
+            'user',
+            'table',
+            'restaurant',
+        ]);
+
+        return $this->successResponse(
+            new ReservationResource($reservation),
+            'Reservation created',
+            201
+        );
+    });
+}
 
     public function show(Reservation $reservation): JsonResponse
     {
@@ -81,32 +105,100 @@ class ReservationController extends Controller
         return $this->successResponse(new ReservationResource($reservation));
     }
 
-    public function update(Request $request, Reservation $reservation): JsonResponse
-    {
-        if ($reservation->user_id !== auth()->id()) {
-            return $this->errorResponse('Forbidden.', 403);
+public function update(Request $request, Reservation $reservation): JsonResponse
+{
+    if ($reservation->user_id !== auth()->id()) {
+        return $this->errorResponse('Forbidden.', 403);
+    }
+
+    if (!in_array($reservation->status, ['pending', 'confirmed'])) {
+        return $this->errorResponse(
+            'Cannot modify a reservation that is already ' . $reservation->status . '.',
+            422
+        );
+    }
+
+    $validator = Validator::make($request->all(), [
+        'party_size' => 'sometimes|integer|min:1|max:50',
+        'reservation_date' => 'sometimes|date|after_or_equal:today',
+        'reservation_time' => 'sometimes|date_format:H:i',
+        'notes' => 'nullable|string|max:500',
+        'special_requests' => 'nullable|string|max:500',
+    ]);
+
+    if ($validator->fails()) {
+        return $this->errorResponse(
+            $validator->errors()->first(),
+            422
+        );
+    }
+
+    $updates = $validator->validated();
+
+    return DB::transaction(function () use ($reservation, $updates) {
+
+        // Lock the table so another transaction cannot
+        // modify reservations for it simultaneously.
+        $table = RestaurantTable::where('id', $reservation->table_id)
+            ->lockForUpdate()
+            ->first();
+
+        if (!$table) {
+            return $this->errorResponse(
+                'Reservation table no longer exists.',
+                422
+            );
         }
 
-        if (!in_array($reservation->status, ['pending', 'confirmed'])) {
-            return $this->errorResponse('Cannot modify a reservation that is already ' . $reservation->status . '.', 422);
+        $newPartySize = $updates['party_size']
+            ?? $reservation->party_size;
+
+        $newDate = $updates['reservation_date']
+            ?? $reservation->reservation_date;
+
+        $newTime = $updates['reservation_time']
+            ?? $reservation->reservation_time;
+
+        if ($table->capacity < $newPartySize) {
+            return $this->errorResponse(
+                'Table capacity is too small for the party size.',
+                422
+            );
         }
 
-        $validator = Validator::make($request->all(), [
-            'party_size' => 'sometimes|integer|min:1|max:50',
-            'reservation_date' => 'sometimes|date|after_or_equal:today',
-            'reservation_time' => 'sometimes|date_format:H:i',
-            'notes' => 'nullable|string|max:500',
-            'special_requests' => 'nullable|string|max:500',
+        $conflicting = Reservation::where('table_id', $reservation->table_id)
+            ->where('reservation_date', $newDate)
+            ->where('reservation_time', $newTime)
+            ->whereIn('status', [
+                'pending',
+                'confirmed',
+                'seated',
+            ])
+            ->whereNull('deleted_at')
+            ->where('id', '!=', $reservation->id)
+            ->exists();
+
+        if ($conflicting) {
+            return $this->errorResponse(
+                'Table is already reserved for this date and time.',
+                409
+            );
+        }
+
+        $reservation->update($updates);
+
+        $reservation->load([
+            'user',
+            'table',
+            'restaurant',
         ]);
 
-        if ($validator->fails()) {
-            return $this->errorResponse($validator->errors()->first(), 422);
-        }
-
-        $reservation->update($validator->validated());
-
-        return $this->successResponse(new ReservationResource($reservation), 'Reservation updated');
-    }
+        return $this->successResponse(
+            new ReservationResource($reservation),
+            'Reservation updated'
+        );
+    });
+}
 
     public function destroy(Reservation $reservation): JsonResponse
     {
