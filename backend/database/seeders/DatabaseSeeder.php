@@ -248,7 +248,7 @@ class DatabaseSeeder extends Seeder
         $restaurants = [$restaurant1, $restaurant2, $restaurant3, $restaurant4, $restaurant5, $restaurant6];
 
         // Tables for each restaurant
-        $seatingTypes = ['standard', 'outdoor', 'bar'];
+        $seatingTypes = ['standard', 'outdoor', 'bar', 'booth'];
         foreach ($restaurants as $restaurant) {
             $tableNum = 1;
             for ($i = 0; $i < 8; $i++) {

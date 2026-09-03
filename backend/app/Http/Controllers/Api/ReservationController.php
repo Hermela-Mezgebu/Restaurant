@@ -54,7 +54,7 @@ class ReservationController extends Controller
                 $conflicting = Reservation::where('table_id', $data['table_id'])
                     ->where('reservation_date', $data['reservation_date'])
                     ->where('reservation_time', $data['reservation_time'])
-                    ->whereIn('status', ['pending', 'confirmed', 'seated'])
+                    ->whereIn('status', ['pending', 'confirmed', 'seated','declined'])
                     ->lockForUpdate()
                     ->exists();
 

@@ -24,7 +24,7 @@ class TableController extends Controller
         $validator = Validator::make($request->all(), [
             'table_number' => 'required|integer|min:1|unique:restaurant_tables,table_number,NULL,id,restaurant_id,' . $restaurant->id,
             'capacity' => 'required|integer|min:1|max:50',
-            'seating_type' => 'nullable|string|in:standard,outdoor,bar',
+            'seating_type' => 'nullable|string|in:standard,outdoor,bar,booth',
             'status' => 'nullable|string|in:available,occupied,reserved',
         ]);
 
@@ -42,7 +42,7 @@ class TableController extends Controller
         $validator = Validator::make($request->all(), [
             'table_number' => 'sometimes|integer|min:1|unique:restaurant_tables,table_number,' . $table->id . ',id,restaurant_id,' . $restaurant->id,
             'capacity' => 'sometimes|integer|min:1|max:50',
-            'seating_type' => 'sometimes|string|in:standard,outdoor,bar',
+            'seating_type' => 'sometimes|string|in:standard,outdoor,bar,booth',
             'status' => 'sometimes|string|in:available,occupied,reserved',
         ]);
 
