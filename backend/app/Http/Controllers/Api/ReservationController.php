@@ -237,4 +237,48 @@ public function update(Request $request, Reservation $reservation): JsonResponse
 
         return $this->successResponse(new ReservationResource($reservation), 'Reservation status updated');
     }
+
+    public function availability(Request $request, Restaurant $restaurant): JsonResponse
+{
+    $validator = Validator::make($request->all(), [
+        'date' => 'required|date|after_or_equal:today',
+        'time' => 'required|date_format:H:i',
+        'party_size' => 'required|integer|min:1|max:50',
+    ]);
+
+    if ($validator->fails()) {
+        return $this->errorResponse(
+            $validator->errors()->first(),
+            422
+        );
+    }
+
+    $date = $request->date;
+    $time = $request->time;
+    $partySize = (int) $request->party_size;
+
+    $reservedTableIds = Reservation::where('restaurant_id', $restaurant->id)
+        ->where('reservation_date', $date)
+        ->where('reservation_time', $time)
+        ->whereIn('status', ['pending', 'confirmed', 'seated'])
+        ->whereNull('deleted_at')
+        ->pluck('table_id');
+
+    $tables = RestaurantTable::where('restaurant_id', $restaurant->id)
+        ->where('status', 'available')
+        ->where('capacity', '>=', $partySize)
+        ->whereNotIn('id', $reservedTableIds)
+        ->orderBy('capacity')
+        ->orderBy('table_number')
+        ->get();
+
+    return $this->successResponse([
+        'restaurant_id' => $restaurant->id,
+        'date' => $date,
+        'time' => $time,
+        'party_size' => $partySize,
+        'available_tables' => $tables,
+        'available_count' => $tables->count(),
+    ]);
+}
 }

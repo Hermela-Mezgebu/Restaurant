@@ -27,6 +27,10 @@ Route::prefix('auth')->group(function () {
 // Restaurant routes (public)
 Route::get('restaurants', [RestaurantController::class, 'index']);
 Route::get('restaurants/{restaurant}', [RestaurantController::class, 'show']);
+Route::get(
+    'restaurants/{restaurant}/availability',
+    [ReservationController::class, 'availability']
+);
 
 // Restaurant routes (authenticated + staff/admin or owner)
 Route::middleware('auth:api')->group(function () {
