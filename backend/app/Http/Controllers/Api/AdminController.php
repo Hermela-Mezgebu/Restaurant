@@ -14,6 +14,9 @@ class AdminController extends Controller
 {
     use ApiResponse;
 
+    /**
+     * Get all restaurants for admin management.
+     */
     public function restaurants(Request $request): JsonResponse
     {
         $restaurants = Restaurant::withCount('reviews')
@@ -26,6 +29,9 @@ class AdminController extends Controller
         return $this->successResponse($restaurants);
     }
 
+    /**
+     * Get all users for admin management.
+     */
     public function users(Request $request): JsonResponse
     {
         $users = User::query()
@@ -46,12 +52,14 @@ class AdminController extends Controller
         return $this->successResponse($users);
     }
 
+    /**
+     * Approve a restaurant.
+     */
     public function approve(Restaurant $restaurant): JsonResponse
     {
-        $restaurant->update([
-            'approved' => true,
-            'is_active' => true,
-        ]);
+        $restaurant->approved = true;
+        $restaurant->is_active = true;
+        $restaurant->save();
 
         return $this->successResponse(
             $restaurant->fresh(),
@@ -59,8 +67,12 @@ class AdminController extends Controller
         );
     }
 
+    /**
+     * Suspend a user.
+     */
     public function suspend(User $user): JsonResponse
     {
+        // Prevent administrators from suspending another admin.
         if ($user->isAdmin()) {
             return $this->errorResponse(
                 'Admin users cannot be suspended.',
@@ -68,19 +80,26 @@ class AdminController extends Controller
             );
         }
 
-        $user->update([
-            'is_active' => false,
-        ]);
+        // Explicitly update the account status.
+        $user->is_active = false;
+        $user->save();
+
+        // Reload the user from the database.
+        $user->refresh();
 
         return $this->successResponse(
-            $user->fresh(),
+            $user,
             'User suspended successfully'
         );
     }
 
+    /**
+     * Get global platform analytics.
+     */
     public function analytics(): JsonResponse
     {
         $totalUsers = User::count();
+
         $totalRestaurants = Restaurant::count();
         $approvedRestaurants = Restaurant::where('approved', true)->count();
         $pendingRestaurants = Restaurant::where('approved', false)->count();
@@ -97,6 +116,8 @@ class AdminController extends Controller
                 'diners' => User::where('role', 'diner')->count(),
                 'staff' => User::where('role', 'staff')->count(),
                 'admins' => User::where('role', 'admin')->count(),
+                'active' => User::where('is_active', true)->count(),
+                'suspended' => User::where('is_active', false)->count(),
             ],
 
             'restaurants' => [

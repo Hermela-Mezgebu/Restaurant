@@ -8,8 +8,8 @@ use App\Models\User;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
@@ -25,7 +25,10 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return $this->errorResponse($validator->errors()->first(), 422);
+            return $this->errorResponse(
+                $validator->errors()->first(),
+                422
+            );
         }
 
         $user = User::create([
@@ -34,6 +37,7 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
             'role' => 'diner',
             'phone' => $request->phone,
+            'is_active' => true,
         ]);
 
         $token = auth()->login($user);
@@ -53,16 +57,57 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return $this->errorResponse($validator->errors()->first(), 422);
+            return $this->errorResponse(
+                $validator->errors()->first(),
+                422
+            );
         }
 
-        $credentials = $request->only('email', 'password');
+        /*
+        |--------------------------------------------------------------------------
+        | Find the user first
+        |--------------------------------------------------------------------------
+        */
+
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user) {
+            return $this->errorResponse(
+                'Invalid credentials',
+                401
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Check account status BEFORE creating a JWT
+        |--------------------------------------------------------------------------
+        */
+
+        if (!$user->is_active) {
+            return $this->errorResponse(
+                'Your account has been suspended.',
+                403
+            );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Verify credentials and create JWT
+        |--------------------------------------------------------------------------
+        */
+
+        $credentials = [
+            'email' => $request->email,
+            'password' => $request->password,
+        ];
 
         if (!$token = auth()->attempt($credentials)) {
-            return $this->errorResponse('Invalid credentials', 401);
+            return $this->errorResponse(
+                'Invalid credentials',
+                401
+            );
         }
-
-        $user = auth()->user();
 
         return $this->successResponse([
             'user' => new UserResource($user),
@@ -82,6 +127,21 @@ class AuthController extends Controller
     {
         $user = auth()->user();
 
+        /*
+        |--------------------------------------------------------------------------
+        | Prevent suspended users from using authenticated endpoints
+        |--------------------------------------------------------------------------
+        */
+
+        if (!$user->is_active) {
+            auth()->logout();
+
+            return $this->errorResponse(
+                'Your account has been suspended.',
+                403
+            );
+        }
+
         $validator = Validator::make($request->all(), [
             'name' => 'sometimes|string|max:255',
             'email' => 'sometimes|string|email|max:255|unique:users,email,' . $user->id,
@@ -90,7 +150,10 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return $this->errorResponse($validator->errors()->first(), 422);
+            return $this->errorResponse(
+                $validator->errors()->first(),
+                422
+            );
         }
 
         if ($request->has('name')) {
@@ -129,6 +192,23 @@ class AuthController extends Controller
 
     public function refresh(): JsonResponse
     {
+        $user = auth()->user();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Prevent suspended users from refreshing their JWT
+        |--------------------------------------------------------------------------
+        */
+
+        if (!$user->is_active) {
+            auth()->logout();
+
+            return $this->errorResponse(
+                'Your account has been suspended.',
+                403
+            );
+        }
+
         $token = auth()->refresh();
 
         return $this->successResponse([
