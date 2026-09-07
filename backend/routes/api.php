@@ -37,13 +37,24 @@ Route::middleware('auth:api')->group(function () {
     Route::post('restaurants', [RestaurantController::class, 'store'])
         ->middleware(StaffMiddleware::class);
 
-    Route::put('restaurants/{restaurant}', [RestaurantController::class, 'update']);
+   Route::put(
+    'restaurants/{restaurant}',
+    [RestaurantController::class, 'update']
+)->middleware([
+    StaffMiddleware::class,
+    'restaurant.access',
+]);
+
     Route::delete('restaurants/{restaurant}', [RestaurantController::class, 'destroy'])
         ->middleware(AdminMiddleware::class);
 });
 
 // Table routes (staff/admin)
-Route::middleware(['auth:api', StaffMiddleware::class])->group(function () {
+Route::middleware([
+    'auth:api',
+    StaffMiddleware::class,
+    'restaurant.access',
+])->group(function () {
     Route::get('restaurants/{restaurant}/tables', [TableController::class, 'index']);
     Route::post('restaurants/{restaurant}/tables', [TableController::class, 'store']);
     Route::put('restaurants/{restaurant}/tables/{table}', [TableController::class, 'update']);
@@ -51,7 +62,10 @@ Route::middleware(['auth:api', StaffMiddleware::class])->group(function () {
 });
 
 // Reservation routes (authenticated)
-Route::middleware('auth:api')->group(function () {
+Route::middleware([
+    'auth:api',
+    // 'restaurant.access',
+])->group(function () {
     Route::get('reservations', [ReservationController::class, 'index']);
     Route::post('reservations', [ReservationController::class, 'store']);
     Route::get('reservations/{reservation}', [ReservationController::class, 'show']);
@@ -60,8 +74,14 @@ Route::middleware('auth:api')->group(function () {
 });
 
 // Restaurant reservation (staff)
-Route::middleware(['auth:api', StaffMiddleware::class])
-    ->get('restaurants/{restaurant}/reservations', [ReservationController::class, 'restaurantReservations']);
+Route::middleware([
+    'auth:api',
+    StaffMiddleware::class,
+    'restaurant.access',
+])->get(
+    'restaurants/{restaurant}/reservations',
+    [ReservationController::class, 'restaurantReservations']
+);
 
 // Reservation status (staff)
 Route::middleware(['auth:api', StaffMiddleware::class])
@@ -79,7 +99,14 @@ Route::middleware('auth:api')->group(function () {
 Route::get('restaurants/{restaurant}/menu', [MenuItemController::class, 'index']);
 
 Route::middleware(['auth:api', StaffMiddleware::class])->group(function () {
-    Route::post('restaurants/{restaurant}/menu', [MenuItemController::class, 'store']);
+    Route::middleware([
+    'auth:api',
+    StaffMiddleware::class,
+    'restaurant.access'          ,
+])->post(
+    'restaurants/{restaurant}/menu',
+    [MenuItemController::class, 'store']
+);
     Route::put('menu-items/{menuItem}', [MenuItemController::class, 'update']);
     Route::delete('menu-items/{menuItem}', [MenuItemController::class, 'destroy']);
 });
