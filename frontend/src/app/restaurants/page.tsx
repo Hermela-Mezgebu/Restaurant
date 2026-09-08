@@ -1,57 +1,612 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { useSearchParams } from 'next/navigation';
-import api from '@/lib/api';
-import RestaurantCard from '@/components/RestaurantCard';
-import { FiSearch, FiSliders, FiX } from 'react-icons/fi';
+import {
+  useCallback,
+  useEffect,
+  useState,
+} from 'react';
+
+import {
+  useSearchParams,
+  useRouter,
+} from 'next/navigation';
+
+import Link from 'next/link';
+import { apiFetch } from '@/lib/api';
+
+import {
+  FiArrowRight,
+  FiChevronLeft,
+  FiChevronRight,
+  FiMapPin,
+  FiSearch,
+  FiSliders,
+  FiStar,
+  FiX,
+} from 'react-icons/fi';
+
+
+// ============================================================
+// TYPES
+// ============================================================
 
 interface Restaurant {
   id: number;
   name: string;
-  cuisine: string;
-  price_range: string;
-  rating: number;
-  location: string;
-  image: string;
+  description?: string | null;
+  cuisine?: string | null;
+  price_range?: string | null;
+  rating?: number | string | null;
+  reviews_count?: number | null;
+  location?: string | null;
+  address?: string | null;
+  image?: string | null;
+  images?: string[] | null;
+  photos?: string[] | null;
+  is_active?: boolean;
+  approved?: boolean;
 }
 
-export default function RestaurantsPage() {
-  const searchParams = useSearchParams();
-  const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState(searchParams.get('search') || '');
-  const [cuisine, setCuisine] = useState(searchParams.get('cuisine') || '');
-  const [priceRange, setPriceRange] = useState(searchParams.get('price_range') || '');
-  const [location, setLocation] = useState(searchParams.get('location') || '');
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
-  const [showFilters, setShowFilters] = useState(false);
+interface LaravelPagination<T> {
+  current_page?: number;
+  data?: T[];
+  first_page_url?: string;
+  from?: number;
+  last_page?: number;
+  last_page_url?: string;
+  links?: any[];
+  next_page_url?: string | null;
+  path?: string;
+  per_page?: number;
+  prev_page_url?: string | null;
+  to?: number;
+  total?: number;
+}
 
-  const fetchRestaurants = useCallback(async () => {
-    setLoading(true);
-    try {
-      const { data } = await api.get('/restaurants', {
-        params: { search, cuisine, price_range: priceRange, location, page, per_page: 12 },
-      });
-      setRestaurants(data.data || data.restaurants || []);
-      setTotalPages(data.last_page || data.total_pages || 1);
-      setTotalCount(data.total || 0);
-    } catch (err) {
-      console.error('Failed to fetch restaurants:', err);
-    } finally {
-      setLoading(false);
+interface RestaurantApiResponse {
+  data?:
+    | LaravelPagination<Restaurant>
+    | Restaurant[];
+  restaurants?: Restaurant[];
+  current_page?: number;
+  last_page?: number;
+  total?: number;
+  total_pages?: number;
+}
+
+
+// ============================================================
+// CONSTANTS
+// ============================================================
+
+const CUISINES = [
+  'Italian',
+  'Chinese',
+  'Japanese',
+  'Mexican',
+  'Indian',
+  'American',
+  'French',
+  'Mediterranean',
+];
+
+const PRICE_RANGES = [
+  {
+    value: '$',
+    label: '$',
+    description: 'Budget',
+  },
+  {
+    value: '$$',
+    label: '$$',
+    description: 'Moderate',
+  },
+  {
+    value: '$$$',
+    label: '$$$',
+    description: 'Premium',
+  },
+  {
+    value: '$$$$',
+    label: '$$$$',
+    description: 'Luxury',
+  },
+];
+
+
+// ============================================================
+// HELPERS
+// ============================================================
+
+function getRestaurantImage(
+  restaurant: Restaurant
+): string | null {
+  if (
+    restaurant.photos &&
+    restaurant.photos.length > 0
+  ) {
+    return restaurant.photos[0];
+  }
+
+  if (
+    restaurant.images &&
+    restaurant.images.length > 0
+  ) {
+    return restaurant.images[0];
+  }
+
+  return restaurant.image || null;
+}
+
+
+function getRating(
+  restaurant: Restaurant
+): number {
+  const rating = Number(
+    restaurant.rating ?? 0
+  );
+
+  if (
+    Number.isNaN(rating) ||
+    rating < 0
+  ) {
+    return 0;
+  }
+
+  return rating;
+}
+
+
+function getReviewsCount(
+  restaurant: Restaurant
+): number {
+  return Number(
+    restaurant.reviews_count ?? 0
+  );
+}
+
+
+function getLocation(
+  restaurant: Restaurant
+): string {
+  return (
+    restaurant.location ||
+    restaurant.address ||
+    'Location unavailable'
+  );
+}
+
+
+// ============================================================
+// SKELETON CARD
+// ============================================================
+
+function RestaurantSkeleton() {
+  return (
+    <div className="overflow-hidden rounded-[24px] border border-gray-200 bg-white">
+      <div className="h-64 animate-pulse bg-gray-200" />
+
+      <div className="space-y-4 p-5">
+        <div className="h-6 w-3/4 animate-pulse rounded bg-gray-200" />
+
+        <div className="h-4 w-1/2 animate-pulse rounded bg-gray-200" />
+
+        <div className="h-4 w-2/3 animate-pulse rounded bg-gray-200" />
+
+        <div className="h-10 w-full animate-pulse rounded-xl bg-gray-200" />
+      </div>
+    </div>
+  );
+}
+
+
+// ============================================================
+// RESTAURANT CARD
+// ============================================================
+
+function RestaurantGridCard({
+  restaurant,
+}: {
+  restaurant: Restaurant;
+}) {
+  const image = getRestaurantImage(
+    restaurant
+  );
+
+  const rating = getRating(
+    restaurant
+  );
+
+  const reviews = getReviewsCount(
+    restaurant
+  );
+
+  return (
+    <article className="group overflow-hidden rounded-[24px] border border-gray-200 bg-white transition duration-300 hover:-translate-y-1 hover:border-gray-300 hover:shadow-xl hover:shadow-gray-200/60">
+
+      {/* Image */}
+      <Link
+        href={`/restaurants/${restaurant.id}`}
+        className="block"
+      >
+        <div className="relative h-64 overflow-hidden bg-gray-100">
+
+          {image ? (
+            <img
+              src={image}
+              alt={restaurant.name}
+              className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
+            />
+          ) : (
+            <div className="flex h-full items-center justify-center">
+              <FiMapPin className="h-10 w-10 text-gray-300" />
+            </div>
+          )}
+
+          {/* Gradient */}
+          <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/50 to-transparent" />
+
+          {/* Price */}
+          {restaurant.price_range && (
+            <div className="absolute right-4 top-4 rounded-full bg-white/95 px-3.5 py-2 text-xs font-bold text-gray-900 shadow-sm backdrop-blur">
+              {restaurant.price_range}
+            </div>
+          )}
+
+          {/* Approved */}
+          {restaurant.approved !== false && (
+            <div className="absolute bottom-4 left-4 rounded-full bg-white/95 px-3 py-1.5 text-[11px] font-bold text-gray-800 backdrop-blur">
+              Verified
+            </div>
+          )}
+        </div>
+      </Link>
+
+
+      {/* Content */}
+      <div className="p-5">
+
+        <div className="flex items-start justify-between gap-4">
+
+          <div className="min-w-0">
+
+            <Link
+              href={`/restaurants/${restaurant.id}`}
+              className="block"
+            >
+              <h2 className="truncate font-serif text-[22px] font-semibold text-gray-950 transition group-hover:text-gray-700">
+                {restaurant.name}
+              </h2>
+            </Link>
+
+            <div className="mt-2 flex items-center gap-2 text-sm text-gray-500">
+
+              {restaurant.cuisine && (
+                <>
+                  <span className="truncate">
+                    {restaurant.cuisine}
+                  </span>
+
+                  <span className="text-gray-300">
+                    •
+                  </span>
+                </>
+              )}
+
+              <span className="flex shrink-0 items-center gap-1 font-semibold text-gray-800">
+                <FiStar className="h-4 w-4 fill-current text-amber-500" />
+
+                {rating > 0
+                  ? rating.toFixed(1)
+                  : 'New'}
+              </span>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        {/* Location */}
+        <div className="mt-4 flex items-center gap-2 text-sm text-gray-500">
+
+          <FiMapPin className="h-4 w-4 shrink-0 text-gray-400" />
+
+          <span className="truncate">
+            {getLocation(restaurant)}
+          </span>
+
+        </div>
+
+
+        {/* Reviews */}
+        {reviews > 0 && (
+          <p className="mt-1 pl-6 text-xs text-gray-400">
+            {reviews}{' '}
+            {reviews === 1
+              ? 'review'
+              : 'reviews'}
+          </p>
+        )}
+
+
+        {/* Button */}
+        <Link
+          href={`/restaurants/${restaurant.id}`}
+          className="mt-5 flex h-11 items-center justify-center gap-2 rounded-xl border border-gray-200 text-sm font-semibold text-gray-800 transition hover:border-gray-900 hover:bg-gray-900 hover:text-white"
+        >
+          View restaurant
+          <FiArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
+        </Link>
+
+      </div>
+
+    </article>
+  );
+}
+
+
+// ============================================================
+// PAGE
+// ============================================================
+
+export default function RestaurantsPage() {
+  const searchParams =
+    useSearchParams();
+
+  const router = useRouter();
+
+
+  // ----------------------------------------------------------
+  // FILTER STATE
+  // ----------------------------------------------------------
+
+  const [
+    restaurants,
+    setRestaurants,
+  ] = useState<Restaurant[]>([]);
+
+  const [
+    loading,
+    setLoading,
+  ] = useState(true);
+
+  const [
+    error,
+    setError,
+  ] = useState('');
+
+  const [
+    search,
+    setSearch,
+  ] = useState(
+    searchParams.get('search') || ''
+  );
+
+  const [
+    cuisine,
+    setCuisine,
+  ] = useState(
+    searchParams.get('cuisine') || ''
+  );
+
+  const [
+    priceRange,
+    setPriceRange,
+  ] = useState(
+    searchParams.get('price_range') || ''
+  );
+
+  const [
+    location,
+    setLocation,
+  ] = useState(
+    searchParams.get('location') || ''
+  );
+
+  const [
+    page,
+    setPage,
+  ] = useState(
+    Number(
+      searchParams.get('page') || 1
+    )
+  );
+
+  const [
+    totalPages,
+    setTotalPages,
+  ] = useState(1);
+
+  const [
+    totalCount,
+    setTotalCount,
+  ] = useState(0);
+
+  const [
+    showFilters,
+    setShowFilters,
+  ] = useState(false);
+
+
+  // ==========================================================
+  // FETCH RESTAURANTS
+  // ==========================================================
+
+const fetchRestaurants = useCallback(async () => {
+  setLoading(true);
+  setError('');
+
+  try {
+    const params = new URLSearchParams();
+
+    if (search.trim()) {
+      params.set('search', search.trim());
     }
-  }, [search, cuisine, priceRange, location, page]);
+
+    if (cuisine) {
+      params.set('cuisine', cuisine);
+    }
+
+    if (priceRange) {
+      params.set('price_range', priceRange);
+    }
+
+    if (location.trim()) {
+      params.set('location', location.trim());
+    }
+
+    params.set('page', String(page));
+    params.set('per_page', '12');
+
+    const response = await apiFetch<RestaurantApiResponse>(
+      `/restaurants?${params.toString()}`
+    );
+
+    const responseData = response?.data;
+
+    // Laravel pagination response
+    if (
+      responseData &&
+      typeof responseData === 'object' &&
+      !Array.isArray(responseData) &&
+      'data' in responseData
+    ) {
+      setRestaurants(responseData.data || []);
+
+      setTotalPages(
+        responseData.last_page ||
+          Math.ceil(
+            (responseData.total || 0) /
+              (responseData.per_page || 12)
+          ) ||
+          1
+      );
+
+      setTotalCount(responseData.total || 0);
+    } else {
+      // Fallback if API returns a simple array
+      const restaurantsData = Array.isArray(responseData)
+        ? responseData
+        : [];
+
+      setRestaurants(restaurantsData);
+      setTotalPages(1);
+      setTotalCount(restaurantsData.length);
+    }
+  } catch (err) {
+    console.error('Failed to fetch restaurants:', err);
+
+    setRestaurants([]);
+    setTotalPages(1);
+    setTotalCount(0);
+
+    setError(
+      err instanceof Error
+        ? err.message
+        : 'Failed to load restaurants.'
+    );
+  } finally {
+    setLoading(false);
+  }
+}, [
+  search,
+  cuisine,
+  priceRange,
+  location,
+  page,
+]);
+
+
+  // ==========================================================
+  // LOAD DATA
+  // ==========================================================
 
   useEffect(() => {
     fetchRestaurants();
   }, [fetchRestaurants]);
 
+
+  // ==========================================================
+  // RESET PAGE WHEN FILTERS CHANGE
+  // ==========================================================
+
   useEffect(() => {
     setPage(1);
-  }, [search, cuisine, priceRange, location]);
+  }, [
+    cuisine,
+    priceRange,
+  ]);
+
+
+  // ==========================================================
+  // UPDATE URL
+  // ==========================================================
+
+  useEffect(() => {
+    const params =
+      new URLSearchParams();
+
+    if (search.trim()) {
+      params.set(
+        'search',
+        search.trim()
+      );
+    }
+
+    if (cuisine) {
+      params.set(
+        'cuisine',
+        cuisine
+      );
+    }
+
+    if (priceRange) {
+      params.set(
+        'price_range',
+        priceRange
+      );
+    }
+
+    if (location.trim()) {
+      params.set(
+        'location',
+        location.trim()
+      );
+    }
+
+    if (page > 1) {
+      params.set(
+        'page',
+        String(page)
+      );
+    }
+
+    const query =
+      params.toString();
+
+    router.replace(
+      query
+        ? `/restaurants?${query}`
+        : '/restaurants',
+      {
+        scroll: false,
+      }
+    );
+  }, [
+    search,
+    cuisine,
+    priceRange,
+    location,
+    page,
+    router,
+  ]);
+
+
+  // ==========================================================
+  // CLEAR FILTERS
+  // ==========================================================
 
   const clearFilters = () => {
     setSearch('');
@@ -61,176 +616,718 @@ export default function RestaurantsPage() {
     setPage(1);
   };
 
-  const hasActiveFilters = search || cuisine || priceRange || location;
+
+  const hasActiveFilters =
+    Boolean(
+      search ||
+      cuisine ||
+      priceRange ||
+      location
+    );
+
+
+  // ==========================================================
+  // PAGINATION
+  // ==========================================================
+
+  const paginationPages =
+    Array.from(
+      {
+        length: Math.min(
+          totalPages,
+          7
+        ),
+      },
+      (_, index) => {
+        if (totalPages <= 7) {
+          return index + 1;
+        }
+
+        if (page <= 4) {
+          return index + 1;
+        }
+
+        if (
+          page >=
+          totalPages - 3
+        ) {
+          return (
+            totalPages - 6 + index
+          );
+        }
+
+        return page - 3 + index;
+      }
+    );
+
+
+  // ==========================================================
+  // RENDER
+  // ==========================================================
 
   return (
-    <div className="min-h-screen bg-gray-950">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold text-white">Restaurants</h1>
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className="lg:hidden bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition"
+    <div className="min-h-screen bg-[#faf9f6] text-gray-900">
+
+
+      {/* =====================================================
+          NAVBAR
+      ====================================================== */}
+
+      <header className="sticky top-0 z-50 border-b border-gray-200/80 bg-[#faf9f6]/95 backdrop-blur">
+
+        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+
+          {/* Logo */}
+          <Link
+            href="/"
+            className="font-serif text-2xl font-bold tracking-tight"
           >
-            <FiSliders className="w-4 h-4" />
-            Filters
-          </button>
+            DINEET
+          </Link>
+
+
+          {/* Desktop navigation */}
+          <nav className="hidden items-center gap-8 md:flex">
+
+            <Link
+              href="/restaurants"
+              className="text-sm font-semibold text-gray-900"
+            >
+              Explore
+            </Link>
+
+            <Link
+              href="/reservations"
+              className="text-sm font-medium text-gray-500 transition hover:text-gray-900"
+            >
+              Reservations
+            </Link>
+
+            <Link
+              href="/menus"
+              className="text-sm font-medium text-gray-500 transition hover:text-gray-900"
+            >
+              Menus
+            </Link>
+
+            <Link
+              href="/about"
+              className="text-sm font-medium text-gray-500 transition hover:text-gray-900"
+            >
+              About
+            </Link>
+
+          </nav>
+
+
+          {/* Sign in */}
+          <Link
+            href="/login"
+            className="rounded-full border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-800 transition hover:border-gray-900"
+          >
+            Sign In
+          </Link>
+
         </div>
 
-        <div className="lg:grid lg:grid-cols-4 lg:gap-8">
-          <div className={`${showFilters ? 'block' : 'hidden'} lg:block mb-6 lg:mb-0`}>
-            <div className="bg-gray-900 rounded-xl p-6 border border-gray-800 space-y-4">
+      </header>
+
+
+      {/* =====================================================
+          HERO
+      ====================================================== */}
+
+      <section className="border-b border-gray-200 bg-[#faf9f6]">
+
+        <div className="mx-auto max-w-7xl px-4 pb-12 pt-14 sm:px-6 lg:px-8">
+
+          <div className="max-w-3xl">
+
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-gray-400">
+              Discover your next table
+            </p>
+
+            <h1 className="mt-4 font-serif text-5xl font-semibold tracking-tight text-gray-950 sm:text-6xl">
+              Explore restaurants
+            </h1>
+
+            <p className="mt-5 max-w-2xl text-base leading-7 text-gray-500 sm:text-lg">
+              Discover restaurants, explore their menus,
+              and reserve the perfect table for your next meal.
+            </p>
+
+          </div>
+
+
+          {/* Search */}
+          <div className="mt-9 max-w-3xl">
+
+            <div className="relative">
+
+              <FiSearch className="absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+
+              <input
+                type="search"
+                value={search}
+                onChange={(event) => {
+                  setSearch(
+                    event.target.value
+                  );
+                  setPage(1);
+                }}
+                placeholder="Search restaurants..."
+                className="h-14 w-full rounded-2xl border border-gray-200 bg-white pl-14 pr-5 text-sm text-gray-900 shadow-sm outline-none transition placeholder:text-gray-400 focus:border-gray-900 focus:ring-4 focus:ring-gray-900/5"
+              />
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      {/* =====================================================
+          MAIN
+      ====================================================== */}
+
+      <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+
+        <div className="lg:grid lg:grid-cols-[250px_1fr] lg:gap-10">
+
+
+          {/* =================================================
+              FILTER SIDEBAR
+          ================================================== */}
+
+          <aside
+            className={`${
+              showFilters
+                ? 'block'
+                : 'hidden'
+            } mb-8 lg:block`}
+          >
+
+            <div className="sticky top-28 rounded-2xl border border-gray-200 bg-white p-5">
+
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-white">Filters</h2>
+
+                <h2 className="font-serif text-xl font-semibold">
+                  Filters
+                </h2>
+
                 {hasActiveFilters && (
-                  <button onClick={clearFilters} className="text-sm text-gray-400 hover:text-white transition flex items-center gap-1">
-                    <FiX className="w-3 h-3" /> Clear
+                  <button
+                    type="button"
+                    onClick={
+                      clearFilters
+                    }
+                    className="flex items-center gap-1 text-xs font-semibold text-gray-500 transition hover:text-gray-900"
+                  >
+                    <FiX className="h-3.5 w-3.5" />
+                    Clear
                   </button>
                 )}
+
               </div>
 
-              <div>
-                <label className="block text-sm text-gray-400 mb-1">Search</label>
+
+              {/* Cuisine */}
+              <div className="mt-7">
+
+                <label className="mb-3 block text-xs font-bold uppercase tracking-wider text-gray-400">
+                  Cuisine
+                </label>
+
+                <div className="space-y-1">
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCuisine('');
+                      setPage(1);
+                    }}
+                    className={`w-full rounded-lg px-3 py-2.5 text-left text-sm transition ${
+                      !cuisine
+                        ? 'bg-gray-900 font-semibold text-white'
+                        : 'text-gray-600 hover:bg-gray-100'
+                    }`}
+                  >
+                    All cuisines
+                  </button>
+
+                  {CUISINES.map(
+                    (item) => (
+                      <button
+                        key={item}
+                        type="button"
+                        onClick={() => {
+                          setCuisine(
+                            item
+                          );
+                          setPage(1);
+                        }}
+                        className={`w-full rounded-lg px-3 py-2.5 text-left text-sm transition ${
+                          cuisine === item
+                            ? 'bg-gray-900 font-semibold text-white'
+                            : 'text-gray-600 hover:bg-gray-100'
+                        }`}
+                      >
+                        {item}
+                      </button>
+                    )
+                  )}
+
+                </div>
+
+              </div>
+
+
+              {/* Price */}
+              <div className="mt-7">
+
+                <label className="mb-3 block text-xs font-bold uppercase tracking-wider text-gray-400">
+                  Price range
+                </label>
+
+                <div className="space-y-1">
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPriceRange('');
+                      setPage(1);
+                    }}
+                    className={`w-full rounded-lg px-3 py-2.5 text-left text-sm transition ${
+                      !priceRange
+                        ? 'bg-gray-900 font-semibold text-white'
+                        : 'text-gray-600 hover:bg-gray-100'
+                    }`}
+                  >
+                    All prices
+                  </button>
+
+                  {PRICE_RANGES.map(
+                    (item) => (
+                      <button
+                        key={item.value}
+                        type="button"
+                        onClick={() => {
+                          setPriceRange(
+                            item.value
+                          );
+                          setPage(1);
+                        }}
+                        className={`flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm transition ${
+                          priceRange ===
+                          item.value
+                            ? 'bg-gray-900 font-semibold text-white'
+                            : 'text-gray-600 hover:bg-gray-100'
+                        }`}
+                      >
+                        <span>
+                          {item.label}
+                        </span>
+
+                        <span
+                          className={`text-xs ${
+                            priceRange ===
+                            item.value
+                              ? 'text-gray-300'
+                              : 'text-gray-400'
+                          }`}
+                        >
+                          {item.description}
+                        </span>
+                      </button>
+                    )
+                  )}
+
+                </div>
+
+              </div>
+
+
+              {/* Location */}
+              <div className="mt-7">
+
+                <label className="mb-3 block text-xs font-bold uppercase tracking-wider text-gray-400">
+                  Location
+                </label>
+
                 <div className="relative">
-                  <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+
+                  <FiMapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+
                   <input
                     type="text"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Restaurant name..."
-                    className="w-full bg-gray-800 border border-gray-700 rounded-lg pl-10 pr-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    value={location}
+                    onChange={(event) => {
+                      setLocation(
+                        event.target.value
+                      );
+                      setPage(1);
+                    }}
+                    placeholder="City or area"
+                    className="h-11 w-full rounded-xl border border-gray-200 bg-gray-50 pl-10 pr-3 text-sm outline-none transition focus:border-gray-900 focus:bg-white"
                   />
+
                 </div>
+
               </div>
 
-              <div>
-                <label className="block text-sm text-gray-400 mb-1">Cuisine</label>
-                <select
-                  value={cuisine}
-                  onChange={(e) => setCuisine(e.target.value)}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+
+              {/* Clear */}
+              {hasActiveFilters && (
+                <button
+                  type="button"
+                  onClick={
+                    clearFilters
+                  }
+                  className="mt-7 w-full rounded-xl bg-gray-100 py-3 text-sm font-semibold text-gray-700 transition hover:bg-gray-200"
                 >
-                  <option value="">All Cuisines</option>
-                  <option value="Italian">Italian</option>
-                  <option value="Chinese">Chinese</option>
-                  <option value="Japanese">Japanese</option>
-                  <option value="Mexican">Mexican</option>
-                  <option value="Indian">Indian</option>
-                  <option value="American">American</option>
-                  <option value="French">French</option>
-                  <option value="Mediterranean">Mediterranean</option>
-                </select>
-              </div>
+                  Clear all filters
+                </button>
+              )}
+
+            </div>
+
+          </aside>
+
+
+          {/* =================================================
+              RESULTS
+          ================================================== */}
+
+          <section>
+
+            {/* Mobile filter */}
+            <div className="mb-6 flex items-center justify-between lg:hidden">
+
+              <p className="text-sm text-gray-500">
+                {loading
+                  ? 'Finding restaurants...'
+                  : `${totalCount} ${
+                      totalCount === 1
+                        ? 'restaurant'
+                        : 'restaurants'
+                    }`}
+              </p>
+
+              <button
+                type="button"
+                onClick={() =>
+                  setShowFilters(
+                    !showFilters
+                  )
+                }
+                className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700"
+              >
+                <FiSliders />
+                Filters
+              </button>
+
+            </div>
+
+
+            {/* Results header */}
+            <div className="mb-7 hidden items-end justify-between lg:flex">
 
               <div>
-                <label className="block text-sm text-gray-400 mb-1">Price Range</label>
-                <select
-                  value={priceRange}
-                  onChange={(e) => setPriceRange(e.target.value)}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                >
-                  <option value="">All Prices</option>
-                  <option value="$">$ - Budget</option>
-                  <option value="$$">$$ - Moderate</option>
-                  <option value="$$$">$$$ - Premium</option>
-                  <option value="$$$$">$$$$ - Luxury</option>
-                </select>
-              </div>
 
-              <div>
-                <label className="block text-sm text-gray-400 mb-1">Location</label>
-                <input
-                  type="text"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  placeholder="City or area..."
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                />
+                {!loading && (
+                  <p className="text-sm text-gray-500">
+                    Showing{' '}
+                    <span className="font-semibold text-gray-900">
+                      {restaurants.length}
+                    </span>{' '}
+                    of{' '}
+                    <span className="font-semibold text-gray-900">
+                      {totalCount}
+                    </span>{' '}
+                    restaurants
+                  </p>
+                )}
+
               </div>
 
               {hasActiveFilters && (
                 <button
-                  onClick={clearFilters}
-                  className="w-full bg-gray-700 hover:bg-gray-600 text-white rounded-lg py-2 transition text-sm font-medium"
+                  type="button"
+                  onClick={
+                    clearFilters
+                  }
+                  className="flex items-center gap-1.5 text-sm font-semibold text-gray-500 transition hover:text-gray-900"
                 >
-                  Clear All Filters
+                  <FiX />
+                  Clear filters
                 </button>
               )}
+
             </div>
-          </div>
 
-          <div className="lg:col-span-3">
-            {!loading && (
-              <p className="text-gray-400 mb-4">
-                {totalCount} {totalCount === 1 ? 'restaurant' : 'restaurants'} found
-              </p>
-            )}
 
-            {loading ? (
-              <div className="flex justify-center py-20">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-emerald-500" />
-              </div>
-            ) : restaurants.length === 0 ? (
-              <div className="text-center py-20">
-                <p className="text-gray-400 text-lg">No restaurants found</p>
-                <p className="text-gray-600 mt-1">Try adjusting your filters</p>
-              </div>
-            ) : (
-              <>
-                <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {restaurants.map((r) => (
-                    <RestaurantCard key={r.id} restaurant={r} />
-                  ))}
+            {/* =================================================
+                ERROR
+            ================================================== */}
+
+            {error && !loading && (
+              <div className="rounded-2xl border border-red-100 bg-red-50 p-8 text-center">
+
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-red-500">
+                  <FiX className="h-5 w-5" />
                 </div>
 
-                {totalPages > 1 && (
-                  <div className="flex justify-center items-center gap-2 mt-10">
-                    <button
-                      onClick={() => setPage((p) => Math.max(1, p - 1))}
-                      disabled={page === 1}
-                      className="px-4 py-2 bg-gray-800 rounded-lg text-white text-sm disabled:opacity-50 hover:bg-gray-700 transition"
-                    >
-                      Previous
-                    </button>
-                    {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
-                      let pageNum: number;
-                      if (totalPages <= 7) {
-                        pageNum = i + 1;
-                      } else if (page <= 4) {
-                        pageNum = i + 1;
-                      } else if (page >= totalPages - 3) {
-                        pageNum = totalPages - 6 + i;
-                      } else {
-                        pageNum = page - 3 + i;
-                      }
-                      return (
-                        <button
-                          key={pageNum}
-                          onClick={() => setPage(pageNum)}
-                          className={`w-10 h-10 rounded-lg text-sm font-medium transition ${
-                            pageNum === page
-                              ? 'bg-emerald-600 text-white'
-                              : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                          }`}
-                        >
-                          {pageNum}
-                        </button>
-                      );
-                    })}
-                    <button
-                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                      disabled={page === totalPages}
-                      className="px-4 py-2 bg-gray-800 rounded-lg text-white text-sm disabled:opacity-50 hover:bg-gray-700 transition"
-                    >
-                      Next
-                    </button>
-                  </div>
-                )}
-              </>
+                <h2 className="mt-4 font-serif text-xl font-semibold text-gray-900">
+                  Something went wrong
+                </h2>
+
+                <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-gray-500">
+                  {error}
+                </p>
+
+                <button
+                  type="button"
+                  onClick={
+                    fetchRestaurants
+                  }
+                  className="mt-5 rounded-xl bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-gray-800"
+                >
+                  Try again
+                </button>
+
+              </div>
             )}
-          </div>
+
+
+            {/* =================================================
+                LOADING
+            ================================================== */}
+
+            {loading && (
+              <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+
+                {Array.from(
+                  { length: 6 }
+                ).map(
+                  (_, index) => (
+                    <RestaurantSkeleton
+                      key={index}
+                    />
+                  )
+                )}
+
+              </div>
+            )}
+
+
+            {/* =================================================
+                EMPTY
+            ================================================== */}
+
+            {!loading &&
+              !error &&
+              restaurants.length ===
+                0 && (
+                <div className="rounded-3xl border border-gray-200 bg-white px-6 py-20 text-center">
+
+                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
+                    <FiSearch className="h-7 w-7 text-gray-400" />
+                  </div>
+
+                  <h2 className="mt-5 font-serif text-2xl font-semibold text-gray-900">
+                    No restaurants found
+                  </h2>
+
+                  <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-gray-500">
+                    We couldn't find any restaurants matching your current search or filters.
+                  </p>
+
+                  {hasActiveFilters && (
+                    <button
+                      type="button"
+                      onClick={
+                        clearFilters
+                      }
+                      className="mt-6 rounded-xl bg-gray-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-gray-800"
+                    >
+                      Clear filters
+                    </button>
+                  )}
+
+                </div>
+              )}
+
+
+            {/* =================================================
+                RESTAURANT GRID
+            ================================================== */}
+
+            {!loading &&
+              !error &&
+              restaurants.length >
+                0 && (
+                <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+
+                  {restaurants.map(
+                    (
+                      restaurant
+                    ) => (
+                      <RestaurantGridCard
+                        key={
+                          restaurant.id
+                        }
+                        restaurant={
+                          restaurant
+                        }
+                      />
+                    )
+                  )}
+
+                </div>
+              )}
+
+
+            {/* =================================================
+                PAGINATION
+            ================================================== */}
+
+            {!loading &&
+              !error &&
+              totalPages > 1 && (
+                <div className="mt-12 flex flex-wrap items-center justify-center gap-2">
+
+                  {/* Previous */}
+                  <button
+                    type="button"
+                    disabled={
+                      page <= 1
+                    }
+                    onClick={() =>
+                      setPage(
+                        (current) =>
+                          Math.max(
+                            1,
+                            current -
+                              1
+                          )
+                      )
+                    }
+                    className="flex h-10 items-center gap-1 rounded-xl border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 transition hover:border-gray-900 disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    <FiChevronLeft />
+                    <span className="hidden sm:inline">
+                      Previous
+                    </span>
+                  </button>
+
+
+                  {/* Pages */}
+                  {paginationPages.map(
+                    (pageNumber) => (
+                      <button
+                        key={
+                          pageNumber
+                        }
+                        type="button"
+                        onClick={() =>
+                          setPage(
+                            pageNumber
+                          )
+                        }
+                        className={`h-10 w-10 rounded-xl text-sm font-semibold transition ${
+                          pageNumber ===
+                          page
+                            ? 'bg-gray-900 text-white'
+                            : 'border border-gray-200 bg-white text-gray-600 hover:border-gray-900 hover:text-gray-900'
+                        }`}
+                      >
+                        {
+                          pageNumber
+                        }
+                      </button>
+                    )
+                  )}
+
+
+                  {/* Next */}
+                  <button
+                    type="button"
+                    disabled={
+                      page >=
+                      totalPages
+                    }
+                    onClick={() =>
+                      setPage(
+                        (current) =>
+                          Math.min(
+                            totalPages,
+                            current +
+                              1
+                          )
+                      )
+                    }
+                    className="flex h-10 items-center gap-1 rounded-xl border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 transition hover:border-gray-900 disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    <span className="hidden sm:inline">
+                      Next
+                    </span>
+                    <FiChevronRight />
+                  </button>
+
+                </div>
+              )}
+
+          </section>
+
         </div>
+
+      </main>
+
+
+      {/* =====================================================
+          MOBILE BOTTOM NAV
+      ====================================================== */}
+
+      <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-gray-200 bg-white/95 px-5 py-3 backdrop-blur md:hidden">
+
+        <div className="mx-auto flex max-w-md items-center justify-around">
+
+          <Link
+            href="/restaurants"
+            className="flex flex-col items-center gap-1 text-gray-900"
+          >
+            <FiMapPin className="h-5 w-5" />
+            <span className="text-[10px] font-semibold">
+              Explore
+            </span>
+          </Link>
+
+          <Link
+            href="/reservations"
+            className="flex flex-col items-center gap-1 text-gray-500"
+          >
+            <FiSliders className="h-5 w-5" />
+            <span className="text-[10px]">
+              Reservations
+            </span>
+          </Link>
+
+          <Link
+            href="/login"
+            className="flex flex-col items-center gap-1 text-gray-500"
+          >
+            <FiArrowRight className="h-5 w-5" />
+            <span className="text-[10px]">
+              Sign In
+            </span>
+          </Link>
+
+        </div>
+
       </div>
+
     </div>
   );
 }
