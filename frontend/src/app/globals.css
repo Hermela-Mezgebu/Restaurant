@@ -1,16 +1,74 @@
 @import "tailwindcss";
 
+/* Class-based dark mode for the navbar toggle */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
-  --background: #0a0a0a;
-  --foreground: #ededed;
+  --background: #faf7f2;
+  --foreground: #29231d;
+  --card: #ffffff;
+  --primary: #c65d32;
+  --primary-hover: #a94b27;
+  --border: #e3d9cc;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+.dark {
+  --background: #181512;
+  --foreground: #f7f1e8;
+  --card: #241f1b;
+  --primary: #e27a4b;
+  --primary-hover: #ef8b5d;
+  --border: #40362e;
+}
+
+html {
+  background: var(--background);
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+html,
+body {
+  min-height: 100%;
 }
 
 body {
+  margin: 0;
   background: var(--background);
   color: var(--foreground);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+* {
+  border-color: var(--border);
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+  background: #c65d32;
+  color: #ffffff;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a99b8d;
 }
