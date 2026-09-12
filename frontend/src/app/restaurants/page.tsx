@@ -35,6 +35,7 @@ interface Restaurant {
   name: string;
   description?: string | null;
   cuisine?: string | null;
+  cuisine_type?: string | null;
   price_range?: string | null;
   rating?: number | string | null;
   reviews_count?: number | null;
@@ -183,17 +184,17 @@ function getLocation(
 
 function RestaurantSkeleton() {
   return (
-    <div className="overflow-hidden rounded-[24px] border border-gray-200 bg-white">
-      <div className="h-64 animate-pulse bg-gray-200" />
+    <div className="overflow-hidden rounded-[24px] border border-stone-200 bg-white dark:bg-stone-900 dark:border-stone-800 dark:bg-stone-900">
+      <div className="h-64 animate-pulse bg-stone-200 dark:bg-stone-800" />
 
       <div className="space-y-4 p-5">
-        <div className="h-6 w-3/4 animate-pulse rounded bg-gray-200" />
+        <div className="h-6 w-3/4 animate-pulse rounded bg-stone-200 dark:bg-stone-800" />
 
-        <div className="h-4 w-1/2 animate-pulse rounded bg-gray-200" />
+        <div className="h-4 w-1/2 animate-pulse rounded bg-stone-200 dark:bg-stone-800" />
 
-        <div className="h-4 w-2/3 animate-pulse rounded bg-gray-200" />
+        <div className="h-4 w-2/3 animate-pulse rounded bg-stone-200 dark:bg-stone-800" />
 
-        <div className="h-10 w-full animate-pulse rounded-xl bg-gray-200" />
+        <div className="h-10 w-full animate-pulse rounded-xl bg-stone-200 dark:bg-stone-800" />
       </div>
     </div>
   );
@@ -222,14 +223,14 @@ function RestaurantGridCard({
   );
 
   return (
-    <article className="group overflow-hidden rounded-[24px] border border-gray-200 bg-white transition duration-300 hover:-translate-y-1 hover:border-gray-300 hover:shadow-xl hover:shadow-gray-200/60">
+    <article className="group overflow-hidden rounded-[24px] border border-stone-200 bg-white dark:bg-stone-900 dark:border-stone-800 dark:bg-stone-900 transition duration-300 hover:-translate-y-1 hover:border-stone-300 hover:border-orange-300 hover:shadow-xl hover:shadow-stone-300/40 dark:border-stone-700 dark:hover:border-orange-800 dark:hover:shadow-black/30">
 
       {/* Image */}
       <Link
         href={`/restaurants/${restaurant.id}`}
         className="block"
       >
-        <div className="relative h-64 overflow-hidden bg-gray-100">
+        <div className="relative h-64 overflow-hidden bg-stone-100 dark:bg-stone-800">
 
           {image ? (
             <img
@@ -239,7 +240,7 @@ function RestaurantGridCard({
             />
           ) : (
             <div className="flex h-full items-center justify-center">
-              <FiMapPin className="h-10 w-10 text-gray-300" />
+              <FiMapPin className="h-10 w-10 text-stone-300 dark:text-stone-600" />
             </div>
           )}
 
@@ -248,14 +249,14 @@ function RestaurantGridCard({
 
           {/* Price */}
           {restaurant.price_range && (
-            <div className="absolute right-4 top-4 rounded-full bg-white/95 px-3.5 py-2 text-xs font-bold text-gray-900 shadow-sm backdrop-blur">
+            <div className="absolute right-4 top-4 rounded-full bg-white dark:bg-stone-900/95 px-3.5 py-2 text-xs font-bold text-stone-900 dark:text-stone-100 shadow-sm backdrop-blur">
               {restaurant.price_range}
             </div>
           )}
 
           {/* Approved */}
           {restaurant.approved !== false && (
-            <div className="absolute bottom-4 left-4 rounded-full bg-white/95 px-3 py-1.5 text-[11px] font-bold text-gray-800 backdrop-blur">
+            <div className="absolute bottom-4 left-4 rounded-full bg-white dark:bg-stone-900/95 px-3 py-1.5 text-[11px] font-bold text-stone-800 dark:text-stone-200 backdrop-blur">
               Verified
             </div>
           )}
@@ -274,26 +275,26 @@ function RestaurantGridCard({
               href={`/restaurants/${restaurant.id}`}
               className="block"
             >
-              <h2 className="truncate font-serif text-[22px] font-semibold text-gray-950 transition group-hover:text-gray-700">
+              <h2 className="truncate font-serif text-[22px] font-semibold text-stone-950 dark:text-stone-50 transition group-hover:text-stone-700 dark:text-stone-300">
                 {restaurant.name}
               </h2>
             </Link>
 
-            <div className="mt-2 flex items-center gap-2 text-sm text-gray-500">
+            <div className="mt-2 flex items-center gap-2 text-sm text-stone-500 dark:text-stone-400">
 
-              {restaurant.cuisine && (
+              {(restaurant.cuisine_type || restaurant.cuisine) && (
                 <>
                   <span className="truncate">
-                    {restaurant.cuisine}
+                    {restaurant.cuisine_type || restaurant.cuisine}
                   </span>
 
-                  <span className="text-gray-300">
+                  <span className="text-stone-300 dark:text-stone-600">
                     •
                   </span>
                 </>
               )}
 
-              <span className="flex shrink-0 items-center gap-1 font-semibold text-gray-800">
+              <span className="flex shrink-0 items-center gap-1 font-semibold text-stone-800 dark:text-stone-200">
                 <FiStar className="h-4 w-4 fill-current text-amber-500" />
 
                 {rating > 0
@@ -309,9 +310,9 @@ function RestaurantGridCard({
 
 
         {/* Location */}
-        <div className="mt-4 flex items-center gap-2 text-sm text-gray-500">
+        <div className="mt-4 flex items-center gap-2 text-sm text-stone-500 dark:text-stone-400">
 
-          <FiMapPin className="h-4 w-4 shrink-0 text-gray-400" />
+          <FiMapPin className="h-4 w-4 shrink-0 text-stone-400 dark:text-stone-500" />
 
           <span className="truncate">
             {getLocation(restaurant)}
@@ -322,7 +323,7 @@ function RestaurantGridCard({
 
         {/* Reviews */}
         {reviews > 0 && (
-          <p className="mt-1 pl-6 text-xs text-gray-400">
+          <p className="mt-1 pl-6 text-xs text-stone-400 dark:text-stone-500">
             {reviews}{' '}
             {reviews === 1
               ? 'review'
@@ -334,7 +335,7 @@ function RestaurantGridCard({
         {/* Button */}
         <Link
           href={`/restaurants/${restaurant.id}`}
-          className="mt-5 flex h-11 items-center justify-center gap-2 rounded-xl border border-gray-200 text-sm font-semibold text-gray-800 transition hover:border-gray-900 hover:bg-gray-900 hover:text-white"
+          className="mt-5 flex h-11 items-center justify-center gap-2 rounded-xl border border-stone-200 dark:border-stone-800 text-sm font-semibold text-stone-800 dark:text-stone-200 transition hover:border-orange-600 dark:hover:border-orange-400 hover:bg-orange-600 dark:hover:bg-orange-500 hover:text-white"
         >
           View restaurant
           <FiArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
@@ -666,92 +667,27 @@ const fetchRestaurants = useCallback(async () => {
   // ==========================================================
 
   return (
-    <div className="min-h-screen bg-[#faf9f6] text-gray-900">
-
-
-      {/* =====================================================
-          NAVBAR
-      ====================================================== */}
-
-      <header className="sticky top-0 z-50 border-b border-gray-200/80 bg-[#faf9f6]/95 backdrop-blur">
-
-        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-
-          {/* Logo */}
-          <Link
-            href="/"
-            className="font-serif text-2xl font-bold tracking-tight"
-          >
-            DINEET
-          </Link>
-
-
-          {/* Desktop navigation */}
-          <nav className="hidden items-center gap-8 md:flex">
-
-            <Link
-              href="/restaurants"
-              className="text-sm font-semibold text-gray-900"
-            >
-              Explore
-            </Link>
-
-            <Link
-              href="/reservations"
-              className="text-sm font-medium text-gray-500 transition hover:text-gray-900"
-            >
-              Reservations
-            </Link>
-
-            <Link
-              href="/menus"
-              className="text-sm font-medium text-gray-500 transition hover:text-gray-900"
-            >
-              Menus
-            </Link>
-
-            <Link
-              href="/about"
-              className="text-sm font-medium text-gray-500 transition hover:text-gray-900"
-            >
-              About
-            </Link>
-
-          </nav>
-
-
-          {/* Sign in */}
-          <Link
-            href="/login"
-            className="rounded-full border border-gray-300 bg-white px-5 py-2.5 text-sm font-semibold text-gray-800 transition hover:border-gray-900"
-          >
-            Sign In
-          </Link>
-
-        </div>
-
-      </header>
-
+    <div className="min-h-screen bg-stone-50 text-stone-900 transition-colors dark:bg-stone-950 dark:text-stone-100">
 
       {/* =====================================================
           HERO
       ====================================================== */}
 
-      <section className="border-b border-gray-200 bg-[#faf9f6]">
+      <section className="border-b border-stone-200 bg-[#faf7f2] dark:border-stone-800 dark:bg-stone-950">
 
         <div className="mx-auto max-w-7xl px-4 pb-12 pt-14 sm:px-6 lg:px-8">
 
           <div className="max-w-3xl">
 
-            <p className="text-xs font-bold uppercase tracking-[0.22em] text-gray-400">
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-stone-400 dark:text-stone-500">
               Discover your next table
             </p>
 
-            <h1 className="mt-4 font-serif text-5xl font-semibold tracking-tight text-gray-950 sm:text-6xl">
+            <h1 className="mt-4 font-serif text-5xl font-semibold tracking-tight text-stone-950 dark:text-stone-50 sm:text-6xl">
               Explore restaurants
             </h1>
 
-            <p className="mt-5 max-w-2xl text-base leading-7 text-gray-500 sm:text-lg">
+            <p className="mt-5 max-w-2xl text-base leading-7 text-stone-500 dark:text-stone-400 sm:text-lg">
               Discover restaurants, explore their menus,
               and reserve the perfect table for your next meal.
             </p>
@@ -764,7 +700,7 @@ const fetchRestaurants = useCallback(async () => {
 
             <div className="relative">
 
-              <FiSearch className="absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+              <FiSearch className="absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-stone-400 dark:text-stone-500" />
 
               <input
                 type="search"
@@ -776,7 +712,7 @@ const fetchRestaurants = useCallback(async () => {
                   setPage(1);
                 }}
                 placeholder="Search restaurants..."
-                className="h-14 w-full rounded-2xl border border-gray-200 bg-white pl-14 pr-5 text-sm text-gray-900 shadow-sm outline-none transition placeholder:text-gray-400 focus:border-gray-900 focus:ring-4 focus:ring-gray-900/5"
+                className="h-14 w-full rounded-2xl border border-stone-200 bg-white dark:bg-stone-900 dark:border-stone-800 dark:bg-stone-900 pl-14 pr-5 text-sm text-stone-900 dark:text-stone-100 shadow-sm outline-none transition placeholder:text-stone-400 dark:text-stone-500 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/20"
               />
 
             </div>
@@ -809,7 +745,7 @@ const fetchRestaurants = useCallback(async () => {
             } mb-8 lg:block`}
           >
 
-            <div className="sticky top-28 rounded-2xl border border-gray-200 bg-white p-5">
+            <div className="sticky top-28 rounded-2xl border border-stone-200 bg-white dark:bg-stone-900 dark:border-stone-800 dark:bg-stone-900 p-5">
 
               <div className="flex items-center justify-between">
 
@@ -823,7 +759,7 @@ const fetchRestaurants = useCallback(async () => {
                     onClick={
                       clearFilters
                     }
-                    className="flex items-center gap-1 text-xs font-semibold text-gray-500 transition hover:text-gray-900"
+                    className="flex items-center gap-1 text-xs font-semibold text-stone-500 dark:text-stone-400 transition hover:text-stone-900 dark:text-stone-100"
                   >
                     <FiX className="h-3.5 w-3.5" />
                     Clear
@@ -836,7 +772,7 @@ const fetchRestaurants = useCallback(async () => {
               {/* Cuisine */}
               <div className="mt-7">
 
-                <label className="mb-3 block text-xs font-bold uppercase tracking-wider text-gray-400">
+                <label className="mb-3 block text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-stone-500">
                   Cuisine
                 </label>
 
@@ -850,8 +786,8 @@ const fetchRestaurants = useCallback(async () => {
                     }}
                     className={`w-full rounded-lg px-3 py-2.5 text-left text-sm transition ${
                       !cuisine
-                        ? 'bg-gray-900 font-semibold text-white'
-                        : 'text-gray-600 hover:bg-gray-100'
+                        ? 'bg-orange-600 dark:bg-orange-500 font-semibold text-white'
+                        : 'text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:bg-stone-800'
                     }`}
                   >
                     All cuisines
@@ -870,8 +806,8 @@ const fetchRestaurants = useCallback(async () => {
                         }}
                         className={`w-full rounded-lg px-3 py-2.5 text-left text-sm transition ${
                           cuisine === item
-                            ? 'bg-gray-900 font-semibold text-white'
-                            : 'text-gray-600 hover:bg-gray-100'
+                            ? 'bg-orange-600 dark:bg-orange-500 font-semibold text-white'
+                            : 'text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:bg-stone-800'
                         }`}
                       >
                         {item}
@@ -887,7 +823,7 @@ const fetchRestaurants = useCallback(async () => {
               {/* Price */}
               <div className="mt-7">
 
-                <label className="mb-3 block text-xs font-bold uppercase tracking-wider text-gray-400">
+                <label className="mb-3 block text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-stone-500">
                   Price range
                 </label>
 
@@ -901,8 +837,8 @@ const fetchRestaurants = useCallback(async () => {
                     }}
                     className={`w-full rounded-lg px-3 py-2.5 text-left text-sm transition ${
                       !priceRange
-                        ? 'bg-gray-900 font-semibold text-white'
-                        : 'text-gray-600 hover:bg-gray-100'
+                        ? 'bg-orange-600 dark:bg-orange-500 font-semibold text-white'
+                        : 'text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:bg-stone-800'
                     }`}
                   >
                     All prices
@@ -922,8 +858,8 @@ const fetchRestaurants = useCallback(async () => {
                         className={`flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left text-sm transition ${
                           priceRange ===
                           item.value
-                            ? 'bg-gray-900 font-semibold text-white'
-                            : 'text-gray-600 hover:bg-gray-100'
+                            ? 'bg-orange-600 dark:bg-orange-500 font-semibold text-white'
+                            : 'text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:bg-stone-800'
                         }`}
                       >
                         <span>
@@ -934,8 +870,8 @@ const fetchRestaurants = useCallback(async () => {
                           className={`text-xs ${
                             priceRange ===
                             item.value
-                              ? 'text-gray-300'
-                              : 'text-gray-400'
+                              ? 'text-stone-300 dark:text-stone-600'
+                              : 'text-stone-400 dark:text-stone-500'
                           }`}
                         >
                           {item.description}
@@ -952,13 +888,13 @@ const fetchRestaurants = useCallback(async () => {
               {/* Location */}
               <div className="mt-7">
 
-                <label className="mb-3 block text-xs font-bold uppercase tracking-wider text-gray-400">
+                <label className="mb-3 block text-xs font-bold uppercase tracking-wider text-stone-400 dark:text-stone-500">
                   Location
                 </label>
 
                 <div className="relative">
 
-                  <FiMapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                  <FiMapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400 dark:text-stone-500" />
 
                   <input
                     type="text"
@@ -969,8 +905,8 @@ const fetchRestaurants = useCallback(async () => {
                       );
                       setPage(1);
                     }}
-                    placeholder="City or area"
-                    className="h-11 w-full rounded-xl border border-gray-200 bg-gray-50 pl-10 pr-3 text-sm outline-none transition focus:border-gray-900 focus:bg-white"
+                    placeholder="City, address, or ZIP code"
+                    className="h-11 w-full rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-stone-950 pl-10 pr-3 text-sm outline-none transition focus:border-orange-500 focus:bg-white dark:focus:bg-stone-900 dark:bg-stone-900"
                   />
 
                 </div>
@@ -985,7 +921,7 @@ const fetchRestaurants = useCallback(async () => {
                   onClick={
                     clearFilters
                   }
-                  className="mt-7 w-full rounded-xl bg-gray-100 py-3 text-sm font-semibold text-gray-700 transition hover:bg-gray-200"
+                  className="mt-7 w-full rounded-xl bg-stone-100 dark:bg-stone-800 py-3 text-sm font-semibold text-stone-700 dark:text-stone-300 transition hover:bg-stone-200 dark:bg-stone-800"
                 >
                   Clear all filters
                 </button>
@@ -1005,7 +941,7 @@ const fetchRestaurants = useCallback(async () => {
             {/* Mobile filter */}
             <div className="mb-6 flex items-center justify-between lg:hidden">
 
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-stone-500 dark:text-stone-400">
                 {loading
                   ? 'Finding restaurants...'
                   : `${totalCount} ${
@@ -1022,7 +958,7 @@ const fetchRestaurants = useCallback(async () => {
                     !showFilters
                   )
                 }
-                className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700"
+                className="flex items-center gap-2 rounded-xl border border-stone-200 bg-white dark:bg-stone-900 dark:border-stone-800 dark:bg-stone-900 px-4 py-2.5 text-sm font-semibold text-stone-700 dark:text-stone-300"
               >
                 <FiSliders />
                 Filters
@@ -1037,13 +973,13 @@ const fetchRestaurants = useCallback(async () => {
               <div>
 
                 {!loading && (
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-stone-500 dark:text-stone-400">
                     Showing{' '}
-                    <span className="font-semibold text-gray-900">
+                    <span className="font-semibold text-stone-900 dark:text-stone-100">
                       {restaurants.length}
                     </span>{' '}
                     of{' '}
-                    <span className="font-semibold text-gray-900">
+                    <span className="font-semibold text-stone-900 dark:text-stone-100">
                       {totalCount}
                     </span>{' '}
                     restaurants
@@ -1058,7 +994,7 @@ const fetchRestaurants = useCallback(async () => {
                   onClick={
                     clearFilters
                   }
-                  className="flex items-center gap-1.5 text-sm font-semibold text-gray-500 transition hover:text-gray-900"
+                  className="flex items-center gap-1.5 text-sm font-semibold text-stone-500 dark:text-stone-400 transition hover:text-stone-900 dark:text-stone-100"
                 >
                   <FiX />
                   Clear filters
@@ -1079,11 +1015,11 @@ const fetchRestaurants = useCallback(async () => {
                   <FiX className="h-5 w-5" />
                 </div>
 
-                <h2 className="mt-4 font-serif text-xl font-semibold text-gray-900">
+                <h2 className="mt-4 font-serif text-xl font-semibold text-stone-900 dark:text-stone-100">
                   Something went wrong
                 </h2>
 
-                <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-gray-500">
+                <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-stone-500 dark:text-stone-400">
                   {error}
                 </p>
 
@@ -1092,7 +1028,7 @@ const fetchRestaurants = useCallback(async () => {
                   onClick={
                     fetchRestaurants
                   }
-                  className="mt-5 rounded-xl bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-gray-800"
+                  className="mt-5 rounded-xl bg-orange-600 dark:bg-orange-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-gray-800"
                 >
                   Try again
                 </button>
@@ -1130,17 +1066,17 @@ const fetchRestaurants = useCallback(async () => {
               !error &&
               restaurants.length ===
                 0 && (
-                <div className="rounded-3xl border border-gray-200 bg-white px-6 py-20 text-center">
+                <div className="rounded-3xl border border-stone-200 bg-white dark:bg-stone-900 dark:border-stone-800 dark:bg-stone-900 px-6 py-20 text-center">
 
-                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
-                    <FiSearch className="h-7 w-7 text-gray-400" />
+                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-stone-100 dark:bg-stone-800">
+                    <FiSearch className="h-7 w-7 text-stone-400 dark:text-stone-500" />
                   </div>
 
-                  <h2 className="mt-5 font-serif text-2xl font-semibold text-gray-900">
+                  <h2 className="mt-5 font-serif text-2xl font-semibold text-stone-900 dark:text-stone-100">
                     No restaurants found
                   </h2>
 
-                  <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-gray-500">
+                  <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-stone-500 dark:text-stone-400">
                     We couldn't find any restaurants matching your current search or filters.
                   </p>
 
@@ -1150,7 +1086,7 @@ const fetchRestaurants = useCallback(async () => {
                       onClick={
                         clearFilters
                       }
-                      className="mt-6 rounded-xl bg-gray-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-gray-800"
+                      className="mt-6 rounded-xl bg-orange-600 dark:bg-orange-500 px-6 py-3 text-sm font-semibold text-white transition hover:bg-gray-800"
                     >
                       Clear filters
                     </button>
@@ -1214,7 +1150,7 @@ const fetchRestaurants = useCallback(async () => {
                           )
                       )
                     }
-                    className="flex h-10 items-center gap-1 rounded-xl border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 transition hover:border-gray-900 disabled:cursor-not-allowed disabled:opacity-40"
+                    className="flex h-10 items-center gap-1 rounded-xl border border-stone-200 bg-white dark:bg-stone-900 dark:border-stone-800 dark:bg-stone-900 px-4 text-sm font-medium text-stone-700 dark:text-stone-300 transition hover:border-orange-600 dark:hover:border-orange-400 disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     <FiChevronLeft />
                     <span className="hidden sm:inline">
@@ -1239,8 +1175,8 @@ const fetchRestaurants = useCallback(async () => {
                         className={`h-10 w-10 rounded-xl text-sm font-semibold transition ${
                           pageNumber ===
                           page
-                            ? 'bg-gray-900 text-white'
-                            : 'border border-gray-200 bg-white text-gray-600 hover:border-gray-900 hover:text-gray-900'
+                            ? 'bg-orange-600 dark:bg-orange-500 text-white'
+                            : 'border border-stone-200 bg-white dark:bg-stone-900 dark:border-stone-800 dark:bg-stone-900 text-stone-600 dark:text-stone-400 hover:border-orange-600 dark:hover:border-orange-400 hover:text-stone-900 dark:text-stone-100'
                         }`}
                       >
                         {
@@ -1268,7 +1204,7 @@ const fetchRestaurants = useCallback(async () => {
                           )
                       )
                     }
-                    className="flex h-10 items-center gap-1 rounded-xl border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 transition hover:border-gray-900 disabled:cursor-not-allowed disabled:opacity-40"
+                    className="flex h-10 items-center gap-1 rounded-xl border border-stone-200 bg-white dark:bg-stone-900 dark:border-stone-800 dark:bg-stone-900 px-4 text-sm font-medium text-stone-700 dark:text-stone-300 transition hover:border-orange-600 dark:hover:border-orange-400 disabled:cursor-not-allowed disabled:opacity-40"
                   >
                     <span className="hidden sm:inline">
                       Next
@@ -1286,47 +1222,7 @@ const fetchRestaurants = useCallback(async () => {
       </main>
 
 
-      {/* =====================================================
-          MOBILE BOTTOM NAV
-      ====================================================== */}
-
-      <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-gray-200 bg-white/95 px-5 py-3 backdrop-blur md:hidden">
-
-        <div className="mx-auto flex max-w-md items-center justify-around">
-
-          <Link
-            href="/restaurants"
-            className="flex flex-col items-center gap-1 text-gray-900"
-          >
-            <FiMapPin className="h-5 w-5" />
-            <span className="text-[10px] font-semibold">
-              Explore
-            </span>
-          </Link>
-
-          <Link
-            href="/reservations"
-            className="flex flex-col items-center gap-1 text-gray-500"
-          >
-            <FiSliders className="h-5 w-5" />
-            <span className="text-[10px]">
-              Reservations
-            </span>
-          </Link>
-
-          <Link
-            href="/login"
-            className="flex flex-col items-center gap-1 text-gray-500"
-          >
-            <FiArrowRight className="h-5 w-5" />
-            <span className="text-[10px]">
-              Sign In
-            </span>
-          </Link>
-
-        </div>
-
-      </div>
+   
 
     </div>
   );
