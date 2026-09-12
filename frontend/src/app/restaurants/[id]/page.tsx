@@ -133,11 +133,13 @@ export default function RestaurantDetailPage() {
   const [reservationTime, setReservationTime] = useState("19:00");
 
   const [availableTimes, setAvailableTimes] = useState<string[]>([
+    "18:00",
     "18:30",
     "19:00",
     "19:30",
     "20:00",
     "20:30",
+    "21:00",
   ]);
 
   const [selectedImage, setSelectedImage] = useState(0);
@@ -152,11 +154,52 @@ export default function RestaurantDetailPage() {
         setLoading(true);
         setError("");
 
-        const response = await apiFetch<RestaurantResponse>(
-          `/restaurants/${restaurantId}`
-        );
+        // Try the detail endpoint first. If the backend does not expose
+        // GET /restaurants/{id}, fall back to the working list endpoint.
+        let loadedRestaurant: Restaurant | null = null;
 
-        setRestaurant(response.data);
+        try {
+          const response = await apiFetch<RestaurantResponse>(
+            `/restaurants/${encodeURIComponent(String(restaurantId))}`
+          );
+
+          const data: any = response?.data;
+          loadedRestaurant =
+            data && !Array.isArray(data) && !Array.isArray(data.data)
+              ? data
+              : data?.data?.find?.(
+                  (item: Restaurant) => String(item.id) === String(restaurantId)
+                ) || null;
+        } catch (detailError) {
+          console.warn(
+            `Restaurant detail endpoint failed for ID ${restaurantId}. Falling back to the restaurant list.`,
+            detailError
+          );
+        }
+
+        if (!loadedRestaurant) {
+          const listResponse = await apiFetch<any>(
+            `/restaurants?per_page=100&page=1`
+          );
+
+          const listData = listResponse?.data;
+          const restaurants: Restaurant[] = Array.isArray(listData)
+            ? listData
+            : Array.isArray(listData?.data)
+              ? listData.data
+              : [];
+
+          loadedRestaurant =
+            restaurants.find(
+              (item) => String(item.id) === String(restaurantId)
+            ) || null;
+        }
+
+        if (!loadedRestaurant) {
+          throw new Error("Restaurant not found.");
+        }
+
+        setRestaurant(loadedRestaurant);
       } catch (err) {
         console.error(err);
 
@@ -233,17 +276,32 @@ export default function RestaurantDetailPage() {
 
         const data = response?.data;
 
-        if (Array.isArray(data)) {
-          const times = data
-            .map((item: any) => {
-              if (typeof item === "string") return item;
+        // Backend returns:
+        // data: {
+        //   restaurant_id: number,
+        //   available: boolean,
+        //   slots: [{ time: "21:00", available: true, ... }]
+        // }
+        const rawSlots = Array.isArray(data?.slots)
+          ? data.slots
+          : Array.isArray(data)
+            ? data
+            : [];
 
-              return item.time || item.reservation_time;
-            })
-            .filter(Boolean);
+        const times = rawSlots
+          .filter((slot: any) => slot?.available !== false)
+          .map((slot: any) => {
+            if (typeof slot === "string") return slot;
+            return slot?.time || slot?.reservation_time;
+          })
+          .filter(Boolean);
 
-          if (times.length > 0) {
-            setAvailableTimes(times);
+        if (times.length > 0) {
+          setAvailableTimes(times);
+
+          // Keep the selected time valid after the date/guest count changes.
+          if (!times.includes(reservationTime)) {
+            setReservationTime(times[0]);
           }
         }
       } catch (err) {
@@ -318,26 +376,38 @@ export default function RestaurantDetailPage() {
         `/restaurants/${restaurant.id}/availability?date=${reservationDate}&time=${reservationTime}&party_size=${partySize}`
       );
 
-      const availableTable =
-        availabilityResponse?.data?.available_tables?.[0] ||
-        availabilityResponse?.data?.tables?.[0] ||
-        availabilityResponse?.data?.[0];
+      const availabilityData = availabilityResponse?.data;
 
-      if (!availableTable) {
+      const rawSlots = Array.isArray(availabilityData?.slots)
+        ? availabilityData.slots
+        : Array.isArray(availabilityData)
+          ? availabilityData
+          : [];
+
+      const selectedSlot = rawSlots.find((slot: any) => {
+        const slotTime =
+          typeof slot === "string"
+            ? slot
+            : slot?.time || slot?.reservation_time;
+
+        return slotTime === reservationTime && slot?.available !== false;
+      });
+
+      if (!selectedSlot) {
         alert(
-          "No table is available for this date, time, and party size."
+          "No table is available for this date, time, and party size. Please choose another time."
         );
         return;
       }
 
       const tableId =
-        typeof availableTable === "number"
-          ? availableTable
-          : availableTable.id || availableTable.table_id;
+        typeof selectedSlot === "object"
+          ? selectedSlot?.table_id || selectedSlot?.id
+          : null;
 
       if (!tableId) {
         alert(
-          "No available table was returned by the server."
+          "This time is available, but the server did not return a table ID. The reservation cannot be created until the availability API returns a real table ID."
         );
         return;
       }
@@ -414,57 +484,7 @@ export default function RestaurantDetailPage() {
 
   return (
     <div className="min-h-screen bg-[#fcf9f8] text-[#1c1b1b] antialiased">
-      {/* =========================
-          DESKTOP NAVBAR
-      ========================== */}
-
-      <nav className="fixed left-0 right-0 top-0 z-50 hidden bg-[#fcf9f8]/85 shadow-sm backdrop-blur-md md:flex">
-        <div className="flex w-full items-center justify-between px-16 py-4">
-          <Link
-            href="/"
-            className="font-[var(--font-playfair)] text-4xl font-bold tracking-tight text-[#01261f]"
-          >
-            DINEET
-          </Link>
-
-          <div className="flex items-center gap-8 text-base">
-            <Link
-              href="/restaurants"
-              className="text-[#414846] transition hover:text-[#01261f]"
-            >
-              Explore
-            </Link>
-
-            <Link
-              href="/reservations"
-              className="border-b-2 border-[#01261f] font-bold text-[#01261f]"
-            >
-              Reservations
-            </Link>
-
-            <Link
-              href="/menus"
-              className="text-[#414846] transition hover:text-[#01261f]"
-            >
-              Menus
-            </Link>
-
-            <Link
-              href="/about"
-              className="text-[#414846] transition hover:text-[#01261f]"
-            >
-              About
-            </Link>
-          </div>
-
-          <Link
-            href="/login"
-            className="rounded-full bg-[#01261f] px-6 py-3 font-semibold text-white transition hover:-translate-y-0.5 hover:shadow-lg"
-          >
-            Sign In
-          </Link>
-        </div>
-      </nav>
+  
 
       <main className="pb-24 md:pt-[88px] md:pb-0">
 
@@ -985,9 +1005,7 @@ export default function RestaurantDetailPage() {
                   </p>
 
                   <div className="mb-6 grid grid-cols-3 gap-2">
-                    {availableTimes
-                      .slice(0, 3)
-                      .map((time) => {
+                    {availableTimes.map((time) => {
                         const selected =
                           reservationTime === time;
 
