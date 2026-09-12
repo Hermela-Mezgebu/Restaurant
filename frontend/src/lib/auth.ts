@@ -83,34 +83,20 @@ export const getToken = () => {
   return localStorage.getItem('token');
 };
 
-<<<<<<< Updated upstream
-export const getUser = () => {
-=======
 export const getUser = (): User | null => {
->>>>>>> Stashed changes
   if (typeof window === 'undefined') {
     return null;
   }
 
   const user = localStorage.getItem('user');
 
-<<<<<<< Updated upstream
-  if (!user || user === 'undefined' || user === 'null') {
-=======
   if (!user) {
->>>>>>> Stashed changes
     return null;
   }
 
   try {
-<<<<<<< Updated upstream
-    return JSON.parse(user);
-  } catch (error) {
-    console.error('Invalid user data in localStorage:', error);
-=======
     return JSON.parse(user) as User;
   } catch {
->>>>>>> Stashed changes
     localStorage.removeItem('user');
     return null;
   }
