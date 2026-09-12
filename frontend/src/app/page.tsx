@@ -98,32 +98,32 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-950 text-white">
+    <main className="min-h-screen bg-stone-950 text-stone-100">
 
       {/* HERO */}
-      <section className="relative overflow-hidden border-b border-gray-900">
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-950/40 via-gray-950 to-gray-950" />
+      <section className="relative overflow-hidden border-b border-stone-900">
+        <div className="absolute inset-0 bg-gradient-to-br from-orange-950/40 via-stone-950 to-stone-950" />
 
-        <div className="absolute -right-40 -top-40 h-[500px] w-[500px] rounded-full bg-emerald-600/10 blur-3xl" />
+        <div className="absolute -right-40 -top-40 h-[500px] w-[500px] rounded-full bg-orange-600/10 blur-3xl" />
 
-        <div className="absolute -left-40 bottom-0 h-[400px] w-[400px] rounded-full bg-emerald-900/10 blur-3xl" />
+        <div className="absolute -left-40 bottom-0 h-[400px] w-[400px] rounded-full bg-orange-900/10 blur-3xl" />
 
         <div className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
 
           <div className="mb-7 flex justify-center">
-            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/5 px-4 py-2 text-sm text-emerald-300">
-              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+            <div className="inline-flex items-center gap-2 rounded-full border border-orange-500/20 bg-orange-500/5 px-4 py-2 text-sm text-orange-300">
+              <span className="h-2 w-2 rounded-full bg-orange-400 animate-pulse" />
               Discover dining in Ethiopia
             </div>
           </div>
 
           <div className="mx-auto max-w-4xl text-center">
-            <h1 className="text-5xl font-bold tracking-tight text-white sm:text-6xl lg:text-7xl">
+            <h1 className="text-5xl font-bold tracking-tight text-stone-100 sm:text-6xl lg:text-7xl">
               Find your
-              <span className="text-emerald-400"> perfect table.</span>
+              <span className="text-orange-400"> perfect table.</span>
             </h1>
 
-            <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-gray-400 sm:text-xl">
+            <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-stone-400 sm:text-xl">
               Discover exceptional restaurants, explore unique dining
               experiences, and reserve your table in seconds.
             </p>
@@ -132,18 +132,18 @@ export default function Home() {
           {/* SEARCH */}
           <form
             onSubmit={handleSearch}
-            className="mx-auto mt-12 max-w-5xl rounded-2xl border border-gray-800 bg-gray-900/90 p-3 shadow-2xl shadow-black/30 backdrop-blur-xl"
+            className="mx-auto mt-12 max-w-5xl rounded-2xl border border-stone-800 bg-stone-900/90 p-3 shadow-2xl shadow-black/30 backdrop-blur-xl"
           >
             <div className="grid gap-3 lg:grid-cols-[1.2fr_1fr_1fr_1fr_auto]">
 
               {/* Cuisine */}
               <div className="relative">
-                <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
+                <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-500" />
 
                 <select
                   value={searchCuisine}
                   onChange={(e) => setSearchCuisine(e.target.value)}
-                  className="h-12 w-full appearance-none rounded-xl border border-gray-800 bg-gray-800/80 pl-11 pr-4 text-sm text-white outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                  className="h-12 w-full appearance-none rounded-xl border border-stone-800 bg-stone-800/80 pl-11 pr-4 text-sm text-stone-100 outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
                 >
                   <option value="">Any cuisine</option>
                   <option value="Ethiopian">Ethiopian</option>
@@ -159,26 +159,26 @@ export default function Home() {
 
               {/* Location */}
               <div className="relative">
-                <FiMapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
+                <FiMapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-500" />
 
                 <input
                   type="text"
                   value={searchLocation}
                   onChange={(e) => setSearchLocation(e.target.value)}
                   placeholder="Location"
-                  className="h-12 w-full rounded-xl border border-gray-800 bg-gray-800/80 pl-11 pr-4 text-sm text-white placeholder-gray-500 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                  className="h-12 w-full rounded-xl border border-stone-800 bg-stone-800/80 pl-11 pr-4 text-sm text-stone-100 placeholder-gray-500 outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
                 />
               </div>
 
               {/* Date */}
               <div className="relative">
-                <FiCalendar className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
+                <FiCalendar className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-500" />
 
                 <input
                   type="date"
                   value={searchDate}
                   onChange={(e) => setSearchDate(e.target.value)}
-                  className="h-12 w-full rounded-xl border border-gray-800 bg-gray-800/80 pl-11 pr-4 text-sm text-white outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                  className="h-12 w-full rounded-xl border border-stone-800 bg-stone-800/80 pl-11 pr-4 text-sm text-stone-100 outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
                 />
               </div>
 
@@ -186,12 +186,12 @@ export default function Home() {
               <div className="grid grid-cols-2 gap-2">
 
                 <div className="relative">
-                  <FiClock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+                  <FiClock className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500" />
 
                   <select
                     value={searchTime}
                     onChange={(e) => setSearchTime(e.target.value)}
-                    className="h-12 w-full appearance-none rounded-xl border border-gray-800 bg-gray-800/80 pl-9 pr-2 text-sm text-white outline-none focus:border-emerald-500"
+                    className="h-12 w-full appearance-none rounded-xl border border-stone-800 bg-stone-800/80 pl-9 pr-2 text-sm text-stone-100 outline-none focus:border-orange-500"
                   >
                     <option value="">Time</option>
                     <option value="18:00">6:00 PM</option>
@@ -205,12 +205,12 @@ export default function Home() {
                 </div>
 
                 <div className="relative">
-                  <FiUsers className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+                  <FiUsers className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500" />
 
                   <select
                     value={searchGuests}
                     onChange={(e) => setSearchGuests(e.target.value)}
-                    className="h-12 w-full appearance-none rounded-xl border border-gray-800 bg-gray-800/80 pl-9 pr-2 text-sm text-white outline-none focus:border-emerald-500"
+                    className="h-12 w-full appearance-none rounded-xl border border-stone-800 bg-stone-800/80 pl-9 pr-2 text-sm text-stone-100 outline-none focus:border-orange-500"
                   >
                     <option value="1">1 guest</option>
                     <option value="2">2 guests</option>
@@ -229,7 +229,7 @@ export default function Home() {
               {/* Search button */}
               <button
                 type="submit"
-                className="flex h-12 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-7 font-semibold text-white transition hover:bg-emerald-500 active:scale-[0.98]"
+                className="flex h-12 items-center justify-center gap-2 rounded-xl bg-orange-600 px-7 font-semibold text-stone-100 transition hover:bg-orange-500 active:scale-[0.98]"
               >
                 Search
                 <FiArrowRight />
@@ -240,14 +240,14 @@ export default function Home() {
 
           {/* Popular searches */}
           <div className="mt-7 flex flex-wrap justify-center gap-3 text-sm">
-            <span className="text-gray-500">Popular:</span>
+            <span className="text-stone-500">Popular:</span>
 
             {['Ethiopian', 'Bole', 'Kazanchis', 'Rooftop', 'Coffee'].map(
               (item) => (
                 <Link
                   key={item}
                   href={`/restaurants?search=${encodeURIComponent(item)}`}
-                  className="text-gray-400 transition hover:text-emerald-400"
+                  className="text-stone-400 transition hover:text-orange-400"
                 >
                   {item}
                 </Link>
@@ -259,8 +259,8 @@ export default function Home() {
       </section>
 
       {/* TRUST BAR */}
-      <section className="border-b border-gray-900 bg-gray-950">
-        <div className="mx-auto grid max-w-7xl grid-cols-2 divide-x divide-gray-800 px-4 py-7 sm:grid-cols-4 lg:px-8">
+      <section className="border-b border-stone-900 bg-stone-950">
+        <div className="mx-auto grid max-w-7xl grid-cols-2 divide-x divide-stone-800 px-4 py-7 sm:grid-cols-4 lg:px-8">
 
           {[
             ['500+', 'Restaurants'],
@@ -269,11 +269,11 @@ export default function Home() {
             ['24/7', 'Easy booking'],
           ].map(([number, label]) => (
             <div key={label} className="px-4 text-center">
-              <div className="text-xl font-bold text-white">
+              <div className="text-xl font-bold text-stone-100">
                 {number}
               </div>
 
-              <div className="mt-1 text-xs text-gray-500 sm:text-sm">
+              <div className="mt-1 text-xs text-stone-500 sm:text-sm">
                 {label}
               </div>
             </div>
@@ -288,22 +288,22 @@ export default function Home() {
         <div className="mb-10 flex items-end justify-between gap-6">
 
           <div>
-            <p className="mb-2 text-sm font-medium uppercase tracking-wider text-emerald-400">
+            <p className="mb-2 text-sm font-medium uppercase tracking-wider text-orange-400">
               Tonight in Addis
             </p>
 
-            <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+            <h2 className="text-3xl font-bold tracking-tight text-stone-100 sm:text-4xl">
               Tables waiting for you
             </h2>
 
-            <p className="mt-3 text-gray-400">
+            <p className="mt-3 text-stone-400">
               Explore highly rated restaurants with available tables tonight.
             </p>
           </div>
 
           <Link
             href="/restaurants"
-            className="hidden items-center gap-2 text-sm font-semibold text-emerald-400 transition hover:text-emerald-300 sm:flex"
+            className="hidden items-center gap-2 text-sm font-semibold text-orange-400 transition hover:text-orange-300 sm:flex"
           >
             View all
             <FiArrowRight />
@@ -319,7 +319,7 @@ export default function Home() {
                 .toLowerCase()
                 .replace(/\s+/g, '-')}`}
               key={restaurant.name}
-              className="group overflow-hidden rounded-2xl border border-gray-800 bg-gray-900 transition duration-300 hover:-translate-y-1 hover:border-emerald-600/40 hover:shadow-xl hover:shadow-black/20"
+              className="group overflow-hidden rounded-2xl border border-stone-800 bg-stone-900 transition duration-300 hover:-translate-y-1 hover:border-orange-600/40 hover:shadow-xl hover:shadow-black/20"
             >
 
               {/* Image */}
@@ -333,11 +333,11 @@ export default function Home() {
 
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
 
-                <div className="absolute left-4 top-4 rounded-full border border-white/10 bg-black/50 px-3 py-1 text-xs font-medium text-white backdrop-blur">
+                <div className="absolute left-4 top-4 rounded-full border border-stone-100/10 bg-stone-950/60 px-3 py-1 text-xs font-medium text-stone-100 backdrop-blur">
                   {restaurant.tag}
                 </div>
 
-                <div className="absolute bottom-4 left-4 flex items-center gap-1 rounded-lg bg-black/60 px-2.5 py-1.5 text-sm backdrop-blur">
+                <div className="absolute bottom-4 left-4 flex items-center gap-1 rounded-lg bg-stone-950/70 px-2.5 py-1.5 text-sm backdrop-blur">
                   <FiStar className="fill-yellow-400 text-yellow-400" />
                   <span className="font-semibold">
                     {restaurant.rating}
@@ -352,29 +352,29 @@ export default function Home() {
                 <div className="flex items-start justify-between gap-3">
 
                   <div>
-                    <h3 className="text-lg font-semibold text-white transition group-hover:text-emerald-400">
+                    <h3 className="text-lg font-semibold text-stone-100 transition group-hover:text-orange-400">
                       {restaurant.name}
                     </h3>
 
-                    <p className="mt-1 text-sm text-gray-500">
+                    <p className="mt-1 text-sm text-stone-500">
                       {restaurant.cuisine}
                     </p>
                   </div>
 
-                  <span className="text-sm font-medium text-gray-400">
+                  <span className="text-sm font-medium text-stone-400">
                     {restaurant.price}
                   </span>
 
                 </div>
 
-                <div className="mt-4 flex items-center gap-2 text-sm text-gray-400">
-                  <FiMapPin className="text-emerald-500" />
+                <div className="mt-4 flex items-center gap-2 text-sm text-stone-400">
+                  <FiMapPin className="text-orange-500" />
                   {restaurant.location}
                 </div>
 
-                <div className="mt-5 border-t border-gray-800 pt-4">
+                <div className="mt-5 border-t border-stone-800 pt-4">
 
-                  <div className="mb-2 text-xs font-medium uppercase tracking-wide text-gray-500">
+                  <div className="mb-2 text-xs font-medium uppercase tracking-wide text-stone-500">
                     Available tonight
                   </div>
 
@@ -383,7 +383,7 @@ export default function Home() {
                     {restaurant.times.map((time) => (
                       <span
                         key={time}
-                        className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-3 py-1.5 text-xs font-medium text-emerald-400"
+                        className="rounded-lg border border-orange-500/20 bg-orange-500/5 px-3 py-1.5 text-xs font-medium text-orange-400"
                       >
                         {time}
                       </span>
@@ -403,7 +403,7 @@ export default function Home() {
         <div className="mt-8 text-center sm:hidden">
           <Link
             href="/restaurants"
-            className="inline-flex items-center gap-2 text-sm font-semibold text-emerald-400"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-orange-400"
           >
             View all restaurants
             <FiArrowRight />
@@ -413,22 +413,22 @@ export default function Home() {
       </section>
 
       {/* EXPERIENCES */}
-      <section className="border-y border-gray-900 bg-gray-900/40">
+      <section className="border-y border-stone-900 bg-stone-900/40">
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
 
           <div className="mx-auto mb-12 max-w-2xl text-center">
 
-            <p className="mb-2 text-sm font-medium uppercase tracking-wider text-emerald-400">
+            <p className="mb-2 text-sm font-medium uppercase tracking-wider text-orange-400">
               More than a reservation
             </p>
 
-            <h2 className="text-3xl font-bold text-white sm:text-4xl">
+            <h2 className="text-3xl font-bold text-stone-100 sm:text-4xl">
               Choose your dining experience
             </h2>
 
-            <p className="mt-4 text-gray-400">
+            <p className="mt-4 text-stone-400">
               Whether it&apos;s a special celebration or a simple coffee,
-              DINEET helps you find the right experience.
+              ReserveEase helps you find the right experience.
             </p>
 
           </div>
@@ -444,22 +444,22 @@ export default function Home() {
                     .toLowerCase()
                     .replace(/\s+/g, '-')}`}
                   key={experience.title}
-                  className="group rounded-2xl border border-gray-800 bg-gray-950 p-7 transition hover:border-emerald-600/40 hover:bg-gray-900"
+                  className="group rounded-2xl border border-stone-800 bg-stone-950 p-7 transition hover:border-orange-600/40 hover:bg-stone-900"
                 >
 
-                  <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400 transition group-hover:bg-emerald-500/20">
+                  <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-orange-500/10 text-orange-400 transition group-hover:bg-orange-500/20">
                     <Icon className="h-6 w-6" />
                   </div>
 
-                  <h3 className="text-xl font-semibold text-white group-hover:text-emerald-400">
+                  <h3 className="text-xl font-semibold text-stone-100 group-hover:text-orange-400">
                     {experience.title}
                   </h3>
 
-                  <p className="mt-3 leading-7 text-gray-400">
+                  <p className="mt-3 leading-7 text-stone-400">
                     {experience.description}
                   </p>
 
-                  <div className="mt-6 flex items-center gap-2 text-sm font-medium text-emerald-400">
+                  <div className="mt-6 flex items-center gap-2 text-sm font-medium text-orange-400">
                     Explore experience
                     <FiChevronRight className="transition group-hover:translate-x-1" />
                   </div>
@@ -480,23 +480,23 @@ export default function Home() {
 
           <div>
 
-            <p className="mb-3 text-sm font-medium uppercase tracking-wider text-emerald-400">
+            <p className="mb-3 text-sm font-medium uppercase tracking-wider text-orange-400">
               Simple by design
             </p>
 
-            <h2 className="text-3xl font-bold text-white sm:text-4xl">
+            <h2 className="text-3xl font-bold text-stone-100 sm:text-4xl">
               Your table is just a few clicks away.
             </h2>
 
-            <p className="mt-5 max-w-lg leading-7 text-gray-400">
-              DINEET removes the friction from restaurant reservations.
+            <p className="mt-5 max-w-lg leading-7 text-stone-400">
+              ReserveEase removes the friction from restaurant reservations.
               Find a restaurant, choose the perfect time, and arrive knowing
               your table is ready.
             </p>
 
             <Link
               href="/restaurants"
-              className="mt-8 inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-6 py-3 font-semibold transition hover:bg-emerald-500"
+              className="mt-8 inline-flex items-center gap-2 rounded-xl bg-orange-600 px-6 py-3 font-semibold transition hover:bg-orange-500"
             >
               Find a restaurant
               <FiArrowRight />
@@ -528,18 +528,18 @@ export default function Home() {
             ].map((step) => (
               <div
                 key={step.number}
-                className="rounded-2xl border border-gray-800 bg-gray-900 p-6"
+                className="rounded-2xl border border-stone-800 bg-stone-900 p-6"
               >
 
-                <div className="mb-8 text-sm font-bold text-emerald-400">
+                <div className="mb-8 text-sm font-bold text-orange-400">
                   {step.number}
                 </div>
 
-                <h3 className="text-xl font-semibold text-white">
+                <h3 className="text-xl font-semibold text-stone-100">
                   {step.title}
                 </h3>
 
-                <p className="mt-3 text-sm leading-6 text-gray-400">
+                <p className="mt-3 text-sm leading-6 text-stone-400">
                   {step.description}
                 </p>
 
@@ -553,24 +553,24 @@ export default function Home() {
       </section>
 
       {/* BENEFITS */}
-      <section className="border-y border-gray-900 bg-gray-900/30">
+      <section className="border-y border-stone-900 bg-stone-900/30">
         <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
 
           <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
 
             <div>
 
-              <p className="mb-3 text-sm font-medium uppercase tracking-wider text-emerald-400">
+              <p className="mb-3 text-sm font-medium uppercase tracking-wider text-orange-400">
                 Built for better dining
               </p>
 
-              <h2 className="text-3xl font-bold text-white sm:text-4xl">
+              <h2 className="text-3xl font-bold text-stone-100 sm:text-4xl">
                 Everything you need before you take the first bite.
               </h2>
 
-              <p className="mt-5 leading-7 text-gray-400">
+              <p className="mt-5 leading-7 text-stone-400">
                 From real-time table availability to personalized dining
-                experiences, DINEET gives you more control over your night out.
+                experiences, ReserveEase gives you more control over your night out.
               </p>
 
             </div>
@@ -587,14 +587,14 @@ export default function Home() {
               ].map((feature) => (
                 <div
                   key={feature}
-                  className="flex items-center gap-3 rounded-xl border border-gray-800 bg-gray-950 p-4"
+                  className="flex items-center gap-3 rounded-xl border border-stone-800 bg-stone-950 p-4"
                 >
 
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-emerald-500/10">
-                    <FiCheck className="h-4 w-4 text-emerald-400" />
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-orange-500/10">
+                    <FiCheck className="h-4 w-4 text-orange-400" />
                   </div>
 
-                  <span className="text-sm text-gray-300">
+                  <span className="text-sm text-stone-300">
                     {feature}
                   </span>
 
@@ -611,41 +611,41 @@ export default function Home() {
       {/* RESTAURANT CTA */}
       <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
 
-        <div className="relative overflow-hidden rounded-3xl border border-emerald-800/30 bg-gradient-to-br from-emerald-950/60 via-gray-900 to-gray-900 p-10 sm:p-14">
+        <div className="relative overflow-hidden rounded-3xl border border-emerald-800/30 bg-gradient-to-br from-emerald-950/60 via-gray-900 to-stone-900 p-10 sm:p-14">
 
-          <div className="absolute -right-20 -top-20 h-72 w-72 rounded-full bg-emerald-500/10 blur-3xl" />
+          <div className="absolute -right-20 -top-20 h-72 w-72 rounded-full bg-orange-500/10 blur-3xl" />
 
           <div className="relative grid gap-10 lg:grid-cols-[1fr_auto] lg:items-center">
 
             <div>
 
-              <div className="mb-4 inline-flex rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-300">
+              <div className="mb-4 inline-flex rounded-full border border-orange-500/20 bg-orange-500/10 px-3 py-1 text-xs font-medium text-orange-300">
                 FOR RESTAURANTS
               </div>
 
-              <h2 className="max-w-2xl text-3xl font-bold text-white sm:text-4xl">
+              <h2 className="max-w-2xl text-3xl font-bold text-stone-100 sm:text-4xl">
                 Turn every reservation into a better guest experience.
               </h2>
 
-              <p className="mt-4 max-w-2xl text-lg leading-7 text-gray-400">
+              <p className="mt-4 max-w-2xl text-lg leading-7 text-stone-400">
                 Manage reservations, tables, guests, waitlists and restaurant
                 operations from one powerful platform.
               </p>
 
               <div className="mt-7 flex flex-wrap gap-3">
 
-                <div className="flex items-center gap-2 text-sm text-gray-300">
-                  <FiCheck className="text-emerald-400" />
+                <div className="flex items-center gap-2 text-sm text-stone-300">
+                  <FiCheck className="text-orange-400" />
                   Live table management
                 </div>
 
-                <div className="flex items-center gap-2 text-sm text-gray-300">
-                  <FiCheck className="text-emerald-400" />
+                <div className="flex items-center gap-2 text-sm text-stone-300">
+                  <FiCheck className="text-orange-400" />
                   Guest management
                 </div>
 
-                <div className="flex items-center gap-2 text-sm text-gray-300">
-                  <FiCheck className="text-emerald-400" />
+                <div className="flex items-center gap-2 text-sm text-stone-300">
+                  <FiCheck className="text-orange-400" />
                   Reservation analytics
                 </div>
 
@@ -655,7 +655,7 @@ export default function Home() {
 
             <Link
               href="/register?role=restaurant"
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-7 py-3.5 font-semibold text-white shadow-lg shadow-emerald-950/30 transition hover:bg-emerald-500"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-orange-600 px-7 py-3.5 font-semibold text-stone-100 shadow-lg shadow-orange-950/30 transition hover:bg-orange-500"
             >
               List your restaurant
               <FiArrowRight />
@@ -668,14 +668,14 @@ export default function Home() {
       </section>
 
       {/* FINAL CTA */}
-      <section className="border-t border-gray-900">
+      <section className="border-t border-stone-900">
         <div className="mx-auto max-w-4xl px-4 py-20 text-center sm:px-6 lg:px-8">
 
-          <h2 className="text-3xl font-bold text-white sm:text-4xl">
+          <h2 className="text-3xl font-bold text-stone-100 sm:text-4xl">
             Your next great meal starts here.
           </h2>
 
-          <p className="mx-auto mt-4 max-w-xl text-gray-400">
+          <p className="mx-auto mt-4 max-w-xl text-stone-400">
             Explore restaurants across Addis Ababa and discover your next
             favorite dining experience.
           </p>
@@ -684,7 +684,7 @@ export default function Home() {
 
             <Link
               href="/restaurants"
-              className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-7 py-3.5 font-semibold transition hover:bg-emerald-500"
+              className="inline-flex items-center gap-2 rounded-xl bg-orange-600 px-7 py-3.5 font-semibold transition hover:bg-orange-500"
             >
               Explore restaurants
               <FiArrowRight />
@@ -692,7 +692,7 @@ export default function Home() {
 
             <Link
               href="/register"
-              className="rounded-xl border border-gray-700 bg-gray-900 px-7 py-3.5 font-semibold text-white transition hover:bg-gray-800"
+              className="rounded-xl border border-stone-700 bg-stone-900 px-7 py-3.5 font-semibold text-stone-100 transition hover:bg-stone-800"
             >
               Create an account
             </Link>
