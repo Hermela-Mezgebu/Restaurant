@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Reservation;
 use App\Models\Restaurant;
+use App\Models\RestaurantTable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -17,8 +19,8 @@ class RestaurantController extends Controller
     public function index(Request $request): JsonResponse
     {
         $query = Restaurant::query()
-            ->where('status', 'active')
-            ->where('approval_status', 'approved');
+            ->where('is_active', true)
+            ->where('approved', true);
 
         // Search
         if ($request->filled('search')) {
@@ -27,15 +29,16 @@ class RestaurantController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'ILIKE', "%{$search}%")
                     ->orWhere('description', 'ILIKE', "%{$search}%")
-                    ->orWhere('cuisine', 'ILIKE', "%{$search}%")
-                    ->orWhere('area', 'ILIKE', "%{$search}%")
-                    ->orWhere('city', 'ILIKE', "%{$search}%");
+                    ->orWhere('cuisine_type', 'ILIKE', "%{$search}%")
+                    ->orWhere('address', 'ILIKE', "%{$search}%")
+                    ->orWhere('city', 'ILIKE', "%{$search}%")
+                    ->orWhere('state', 'ILIKE', "%{$search}%");
             });
         }
 
         // Cuisine filter
         if ($request->filled('cuisine')) {
-            $query->where('cuisine', $request->input('cuisine'));
+            $query->where('cuisine_type', $request->input('cuisine'));
         }
 
         // City filter
@@ -73,7 +76,7 @@ class RestaurantController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
 
-            'cuisine' => ['nullable', 'string', 'max:100'],
+            'cuisine_type' => ['nullable', 'string', 'max:100'],
             'price_range' => ['nullable', 'string', 'max:10'],
 
             'phone' => ['nullable', 'string', 'max:30'],
@@ -95,8 +98,8 @@ class RestaurantController extends Controller
             ...$validated,
             'owner_id' => Auth::id(),
             'slug' => $this->generateUniqueSlug($validated['name']),
-            'status' => 'active',
-            'approval_status' => 'pending',
+            'state' => 'active',
+            'approved' => 'pending',
         ]);
 
         return response()->json([
@@ -112,8 +115,8 @@ class RestaurantController extends Controller
     public function show(Restaurant $restaurant): JsonResponse
     {
         if (
-            $restaurant->status !== 'active' ||
-            $restaurant->approval_status !== 'approved'
+            $restaurant->state !== 'active' ||
+            $restaurant->approved !== 'approved'
         ) {
             return response()->json([
                 'success' => false,
@@ -140,7 +143,7 @@ class RestaurantController extends Controller
             'name' => ['sometimes', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
 
-            'cuisine' => ['nullable', 'string', 'max:100'],
+            'cuisine_type' => ['nullable', 'string', 'max:100'],
             'price_range' => ['nullable', 'string', 'max:10'],
 
             'phone' => ['nullable', 'string', 'max:30'],
@@ -225,5 +228,139 @@ class RestaurantController extends Controller
             403,
             'You are not authorized to manage this restaurant.'
         );
+    }
+
+    /**
+     * Get real table availability for a restaurant.
+     *
+     * Returns real restaurant table IDs for available reservation times.
+     */
+    public function availability(
+        Request $request,
+        Restaurant $restaurant
+    ): JsonResponse {
+        $validated = $request->validate([
+            'date' => ['required', 'date', 'after_or_equal:today'],
+            'party_size' => ['required', 'integer', 'min:1', 'max:50'],
+        ]);
+
+        $date = $validated['date'];
+        $partySize = (int) $validated['party_size'];
+
+        /*
+         * Available reservation times.
+         * These use 24-hour HH:mm format.
+         */
+        $times = [
+            '11:30',
+            '12:00',
+            '12:30',
+            '13:00',
+            '13:30',
+            '18:00',
+            '18:30',
+            '19:00',
+            '19:30',
+            '20:00',
+            '20:30',
+            '21:00',
+        ];
+
+        /*
+         * Get tables belonging to this restaurant that:
+         *
+         * - are currently available
+         * - have enough capacity for the requested party
+         */
+        $tables = RestaurantTable::query()
+            ->where('restaurant_id', $restaurant->id)
+            ->where('status', 'available')
+            ->where('capacity', '>=', $partySize)
+            ->orderBy('capacity')
+            ->orderBy('id')
+            ->get();
+
+        $slots = [];
+
+        foreach ($times as $time) {
+            /*
+             * Find tables already reserved for this exact
+             * restaurant, date and time.
+             */
+            $reservedTableIds = Reservation::query()
+                ->where('restaurant_id', $restaurant->id)
+                ->where('reservation_date', $date)
+                ->where('reservation_time', $time)
+                ->whereIn('status', [
+                    'pending',
+                    'confirmed',
+                    'seated',
+                ])
+                ->whereNotNull('table_id')
+                ->pluck('table_id')
+                ->map(fn ($id) => (int) $id)
+                ->toArray();
+
+            /*
+             * Find the smallest suitable table that is not reserved.
+             */
+            $availableTable = $tables->first(
+                function (RestaurantTable $table) use ($reservedTableIds) {
+                    return !in_array(
+                        (int) $table->id,
+                        $reservedTableIds,
+                        true
+                    );
+                }
+            );
+
+            /*
+             * Count all suitable tables that remain available.
+             */
+            $availableTableCount = $tables
+                ->filter(function (RestaurantTable $table) use ($reservedTableIds) {
+                    return !in_array(
+                        (int) $table->id,
+                        $reservedTableIds,
+                        true
+                    );
+                })
+                ->count();
+
+            if ($availableTable) {
+                $slots[] = [
+                    'time' => $time,
+                    'available' => true,
+                    'available_tables' => $availableTableCount,
+                    'table_id' => (int) $availableTable->id,
+                    'table_number' => $availableTable->table_number,
+                    'capacity' => (int) $availableTable->capacity,
+                ];
+            } else {
+                $slots[] = [
+                    'time' => $time,
+                    'available' => false,
+                    'available_tables' => 0,
+                    'table_id' => null,
+                    'table_number' => null,
+                    'capacity' => null,
+                ];
+            }
+        }
+
+        $hasAvailability = collect($slots)
+            ->contains('available', true);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Available tables retrieved successfully.',
+            'data' => [
+                'restaurant_id' => $restaurant->id,
+                'date' => $date,
+                'party_size' => $partySize,
+                'available' => $hasAvailability,
+                'slots' => $slots,
+            ],
+        ]);
     }
 }
