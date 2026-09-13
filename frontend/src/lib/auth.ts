@@ -69,6 +69,10 @@ export const logout = async () => {
     await apiFetch('/auth/logout', {
       method: 'POST',
     });
+  } catch (error) {
+    // Even if the server rejects the token,
+    // we still want to log the user out locally.
+    console.error('Logout request failed:', error);
   } finally {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
