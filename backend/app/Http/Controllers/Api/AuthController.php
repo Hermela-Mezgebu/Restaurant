@@ -15,11 +15,14 @@ class AuthController extends Controller
 {
     use ApiResponse;
 
+    /**
+     * Register a new diner.
+     */
     public function register(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
+            'email' => 'required|string|email|max:255|unique:users,email',
             'password' => 'required|string|min:6|max:255',
             'phone' => 'nullable|string|max:20',
         ]);
@@ -40,15 +43,32 @@ class AuthController extends Controller
             'is_active' => true,
         ]);
 
-        $token = auth()->login($user);
+        /*
+         * Generate JWT token for the newly registered user.
+         */
+        $token = auth('api')->login($user);
 
-        return $this->successResponse([
-            'user' => new UserResource($user),
-            'access_token' => $token,
-            'token_type' => 'bearer',
-        ], 'User registered successfully', 201);
+        if (!is_string($token) || empty($token)) {
+            return $this->errorResponse(
+                'Unable to generate authentication token.',
+                500
+            );
+        }
+
+        return $this->successResponse(
+            [
+                'user' => new UserResource($user),
+                'access_token' => $token,
+                'token_type' => 'bearer',
+            ],
+            'User registered successfully',
+            201
+        );
     }
 
+    /**
+     * Login existing user.
+     */
     public function login(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
@@ -63,69 +83,70 @@ class AuthController extends Controller
             );
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Find the user first
-        |--------------------------------------------------------------------------
-        */
-
-        $user = User::where('email', $request->email)->first();
-
-        if (!$user) {
-            return $this->errorResponse(
-                'Invalid credentials',
-                401
-            );
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Check account status BEFORE creating a JWT
-        |--------------------------------------------------------------------------
-        */
-
-        if (!$user->is_active) {
-            return $this->errorResponse(
-                'Your account has been suspended.',
-                403
-            );
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Verify credentials and create JWT
-        |--------------------------------------------------------------------------
-        */
-
         $credentials = [
             'email' => $request->email,
             'password' => $request->password,
         ];
 
-        if (!$token = auth()->attempt($credentials)) {
+        /*
+         * IMPORTANT:
+         * Use the API guard explicitly.
+         */
+        $token = auth('api')->attempt($credentials);
+
+        /*
+         * attempt() should return false when credentials
+         * are invalid.
+         */
+        if (!$token) {
             return $this->errorResponse(
                 'Invalid credentials',
                 401
             );
         }
 
-        return $this->successResponse([
-            'user' => new UserResource($user),
-            'access_token' => $token,
-            'token_type' => 'bearer',
-        ], 'Login successful');
-    }
+        /*
+         * JWT-auth should return a STRING token.
+         * If it returns boolean true, something is wrong
+         * with the JWT configuration/package.
+         */
+        if (!is_string($token) || empty($token)) {
+            return $this->errorResponse(
+                'Authentication succeeded, but the JWT token could not be generated correctly.',
+                500
+            );
+        }
 
-    public function me(): JsonResponse
-    {
+        $user = auth('api')->user();
+
         return $this->successResponse(
-            new UserResource(auth()->user())
+            [
+                'user' => new UserResource($user),
+                'access_token' => $token,
+                'token_type' => 'bearer',
+            ],
+            'Login successful'
         );
     }
 
+    /**
+     * Get currently authenticated user.
+     */
+    public function me(): JsonResponse
+    {
+        $user = auth('api')->user();
+
+        return $this->successResponse(
+            new UserResource($user)
+        );
+    }
+
+    /**
+     * Update authenticated user's profile.
+     */
     public function updateProfile(Request $request): JsonResponse
     {
-        $user = auth()->user();
+        $user = auth('api')->user();
 
         /*
         |--------------------------------------------------------------------------
@@ -180,9 +201,12 @@ class AuthController extends Controller
         );
     }
 
+    /**
+     * Logout authenticated user.
+     */
     public function logout(): JsonResponse
     {
-        auth()->logout();
+        auth('api')->logout();
 
         return $this->successResponse(
             null,
@@ -190,30 +214,26 @@ class AuthController extends Controller
         );
     }
 
+    /**
+     * Refresh JWT token.
+     */
     public function refresh(): JsonResponse
     {
-        $user = auth()->user();
+        $token = auth('api')->refresh();
 
-        /*
-        |--------------------------------------------------------------------------
-        | Prevent suspended users from refreshing their JWT
-        |--------------------------------------------------------------------------
-        */
-
-        if (!$user->is_active) {
-            auth()->logout();
-
+        if (!is_string($token) || empty($token)) {
             return $this->errorResponse(
-                'Your account has been suspended.',
-                403
+                'Unable to refresh authentication token.',
+                500
             );
         }
 
-        $token = auth()->refresh();
-
-        return $this->successResponse([
-            'access_token' => $token,
-            'token_type' => 'bearer',
-        ], 'Token refreshed');
+        return $this->successResponse(
+            [
+                'access_token' => $token,
+                'token_type' => 'bearer',
+            ],
+            'Token refreshed'
+        );
     }
 }

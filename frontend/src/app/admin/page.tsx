@@ -1,8 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import api from '@/lib/api';
-import { FiUsers, FiServer, FiCalendar, FiCheckCircle, FiXCircle } from 'react-icons/fi';
+import {
+  FiUsers,
+  FiServer,
+  FiCalendar,
+  FiCheckCircle,
+} from 'react-icons/fi';
 
 interface Restaurant {
   id: number;
@@ -26,40 +31,111 @@ interface Stats {
   reservations: number;
 }
 
+interface AnalyticsResponse {
+  data?: Stats;
+  users?: number;
+  restaurants?: number;
+  reservations?: number;
+}
+
+interface RestaurantsResponse {
+  data?: Restaurant[];
+  restaurants?: Restaurant[];
+}
+
+interface UsersResponse {
+  data?: User[];
+  users?: User[];
+}
+
 export default function AdminPage() {
-  const [stats, setStats] = useState<Stats>({ users: 0, restaurants: 0, reservations: 0 });
+  const [stats, setStats] = useState<Stats>({
+    users: 0,
+    restaurants: 0,
+    reservations: 0,
+  });
+
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [statsRes, restaurantsRes, usersRes] = await Promise.all([
-          api.get('/admin/stats'),
-          api.get('/admin/restaurants'),
-          api.get('/admin/users'),
+        const [
+          statsRes,
+          restaurantsRes,
+          usersRes,
+        ] = await Promise.all([
+          api.get<AnalyticsResponse>('/admin/analytics'),
+          api.get<RestaurantsResponse>('/admin/restaurants'),
+          api.get<UsersResponse>('/admin/users'),
         ]);
-        setStats(statsRes.data);
-        setRestaurants(restaurantsRes.data.data || restaurantsRes.data.restaurants || []);
-        setUsers(usersRes.data.data || usersRes.data.users || []);
+
+        const analytics = statsRes.data;
+
+        setStats(
+          analytics.data ?? {
+            users: analytics.users ?? 0,
+            restaurants: analytics.restaurants ?? 0,
+            reservations: analytics.reservations ?? 0,
+          }
+        );
+
+        setRestaurants(
+          restaurantsRes.data.data ??
+            restaurantsRes.data.restaurants ??
+            []
+        );
+
+        setUsers(
+          usersRes.data.data ??
+            usersRes.data.users ??
+            []
+        );
       } catch (err) {
         console.error('Failed to fetch admin data:', err);
       } finally {
         setLoading(false);
       }
     };
+
     fetchData();
   }, []);
 
-  const handleStatus = async (id: number, status: string) => {
+  const handleApprove = async (id: number) => {
+    setActionLoading(id);
+
     try {
-      await api.put(`/admin/restaurants/${id}/status`, { status });
+      const response = await api.put<{
+        data?: Restaurant;
+        restaurant?: Restaurant;
+      }>(
+        `/admin/restaurants/${id}/approve`
+      );
+
+      const updatedRestaurant =
+        response.data.data ??
+        response.data.restaurant;
+
       setRestaurants((prev) =>
-        prev.map((r) => (r.id === id ? { ...r, status } : r))
+        prev.map((restaurant) =>
+          restaurant.id === id
+            ? updatedRestaurant ?? {
+                ...restaurant,
+                status: 'approved',
+              }
+            : restaurant
+        )
       );
     } catch (err) {
-      console.error('Failed to update restaurant status:', err);
+      console.error(
+        'Failed to approve restaurant:',
+        err
+      );
+    } finally {
+      setActionLoading(null);
     }
   };
 
@@ -72,92 +148,147 @@ export default function AdminPage() {
   }
 
   const statCards = [
-    { label: 'Total Users', value: stats.users, icon: FiUsers, color: 'from-blue-600 to-blue-800' },
-    { label: 'Restaurants', value: stats.restaurants, icon: FiServer, color: 'from-emerald-600 to-emerald-800' },
-    { label: 'Reservations', value: stats.reservations, icon: FiCalendar, color: 'from-purple-600 to-purple-800' },
+    {
+      label: 'Total Users',
+      value: stats.users,
+      icon: FiUsers,
+      color: 'from-blue-600 to-blue-800',
+    },
+    {
+      label: 'Restaurants',
+      value: stats.restaurants,
+      icon: FiServer,
+      color: 'from-emerald-600 to-emerald-800',
+    },
+    {
+      label: 'Reservations',
+      value: stats.reservations,
+      icon: FiCalendar,
+      color: 'from-purple-600 to-purple-800',
+    },
   ];
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold text-white mb-8">Admin Overview</h1>
+      <h1 className="text-2xl font-bold text-white mb-8">
+        Admin Overview
+      </h1>
 
       <div className="grid sm:grid-cols-3 gap-6 mb-8">
-        {statCards.map((s) => (
+        {statCards.map((stat) => (
           <div
-            key={s.label}
-            className={`bg-gradient-to-br ${s.color} rounded-xl p-6 shadow-lg`}
+            key={stat.label}
+            className={`bg-gradient-to-br ${stat.color} rounded-xl p-6 shadow-lg`}
           >
             <div className="flex items-center justify-between mb-2">
-              <p className="text-gray-200 text-sm font-medium">{s.label}</p>
-              <s.icon className="w-5 h-5 text-white/60" />
+              <p className="text-gray-200 text-sm font-medium">
+                {stat.label}
+              </p>
+
+              <stat.icon className="w-5 h-5 text-white/60" />
             </div>
-            <p className="text-3xl font-bold text-white">{s.value}</p>
+
+            <p className="text-3xl font-bold text-white">
+              {stat.value}
+            </p>
           </div>
         ))}
       </div>
 
       <div className="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden mb-8">
         <div className="p-6 border-b border-gray-800">
-          <h2 className="text-lg font-semibold text-white">Restaurants</h2>
+          <h2 className="text-lg font-semibold text-white">
+            Restaurants
+          </h2>
         </div>
+
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="text-gray-400 text-sm border-b border-gray-800">
-                <th className="text-left py-3 px-6 font-medium">Name</th>
-                <th className="text-left py-3 px-6 font-medium">Cuisine</th>
-                <th className="text-left py-3 px-6 font-medium">Location</th>
-                <th className="text-left py-3 px-6 font-medium">Status</th>
-                <th className="text-left py-3 px-6 font-medium">Actions</th>
+                <th className="text-left py-3 px-6 font-medium">
+                  Name
+                </th>
+                <th className="text-left py-3 px-6 font-medium">
+                  Cuisine
+                </th>
+                <th className="text-left py-3 px-6 font-medium">
+                  Location
+                </th>
+                <th className="text-left py-3 px-6 font-medium">
+                  Status
+                </th>
+                <th className="text-left py-3 px-6 font-medium">
+                  Actions
+                </th>
               </tr>
             </thead>
+
             <tbody>
               {restaurants.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="text-center py-8 text-gray-500">
+                  <td
+                    colSpan={5}
+                    className="text-center py-8 text-gray-500"
+                  >
                     No restaurants found
                   </td>
                 </tr>
               ) : (
-                restaurants.map((r) => (
-                  <tr key={r.id} className="border-b border-gray-800 text-gray-300 hover:bg-gray-800/50 transition">
-                    <td className="py-4 px-6 font-medium text-white">{r.name}</td>
-                    <td className="py-4 px-6">{r.cuisine}</td>
-                    <td className="py-4 px-6">{r.location}</td>
+                restaurants.map((restaurant) => (
+                  <tr
+                    key={restaurant.id}
+                    className="border-b border-gray-800 text-gray-300 hover:bg-gray-800/50 transition"
+                  >
+                    <td className="py-4 px-6 font-medium text-white">
+                      {restaurant.name}
+                    </td>
+
+                    <td className="py-4 px-6">
+                      {restaurant.cuisine}
+                    </td>
+
+                    <td className="py-4 px-6">
+                      {restaurant.location}
+                    </td>
+
                     <td className="py-4 px-6">
                       <span
                         className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          r.status === 'approved'
+                          restaurant.status === 'approved'
                             ? 'bg-emerald-500/10 text-emerald-400'
-                            : r.status === 'rejected'
+                            : restaurant.status === 'rejected'
                               ? 'bg-red-500/10 text-red-400'
                               : 'bg-yellow-500/10 text-yellow-400'
                         }`}
                       >
-                        {r.status === 'approved' && <FiCheckCircle className="w-3 h-3" />}
-                        {r.status === 'rejected' && <FiXCircle className="w-3 h-3" />}
-                        {r.status || 'pending'}
+                        {restaurant.status === 'approved' && (
+                          <FiCheckCircle className="w-3 h-3" />
+                        )}
+
+                        {restaurant.status ||
+                          'pending'}
                       </span>
                     </td>
+
                     <td className="py-4 px-6">
-                      <div className="flex gap-2">
-                        {r.status !== 'approved' && (
-                          <button
-                            onClick={() => handleStatus(r.id, 'approved')}
-                            className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-3 py-1.5 rounded-lg transition"
-                          >
-                            Approve
-                          </button>
-                        )}
-                        {r.status !== 'rejected' && (
-                          <button
-                            onClick={() => handleStatus(r.id, 'rejected')}
-                            className="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1.5 rounded-lg transition"
-                          >
-                            Reject
-                          </button>
-                        )}
-                      </div>
+                      {restaurant.status !== 'approved' && (
+                        <button
+                          onClick={() =>
+                            handleApprove(restaurant.id)
+                          }
+                          disabled={
+                            actionLoading === restaurant.id
+                          }
+                          className="inline-flex items-center gap-1 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs px-3 py-1.5 rounded-lg transition"
+                        >
+                          <FiCheckCircle className="w-3.5 h-3.5" />
+
+                          {actionLoading === restaurant.id
+                            ? 'Approving...'
+                            : 'Approve'}
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))
@@ -169,49 +300,84 @@ export default function AdminPage() {
 
       <div className="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden">
         <div className="p-6 border-b border-gray-800">
-          <h2 className="text-lg font-semibold text-white">Users</h2>
+          <h2 className="text-lg font-semibold text-white">
+            Users
+          </h2>
         </div>
+
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="text-gray-400 text-sm border-b border-gray-800">
-                <th className="text-left py-3 px-6 font-medium">Name</th>
-                <th className="text-left py-3 px-6 font-medium">Email</th>
-                <th className="text-left py-3 px-6 font-medium">Role</th>
-                <th className="text-left py-3 px-6 font-medium">Joined</th>
+                <th className="text-left py-3 px-6 font-medium">
+                  Name
+                </th>
+
+                <th className="text-left py-3 px-6 font-medium">
+                  Email
+                </th>
+
+                <th className="text-left py-3 px-6 font-medium">
+                  Role
+                </th>
+
+                <th className="text-left py-3 px-6 font-medium">
+                  Joined
+                </th>
               </tr>
             </thead>
+
             <tbody>
               {users.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="text-center py-8 text-gray-500">
+                  <td
+                    colSpan={4}
+                    className="text-center py-8 text-gray-500"
+                  >
                     No users found
                   </td>
                 </tr>
               ) : (
-                users.map((u) => (
-                  <tr key={u.id} className="border-b border-gray-800 text-gray-300 hover:bg-gray-800/50 transition">
-                    <td className="py-4 px-6 font-medium text-white">{u.name}</td>
-                    <td className="py-4 px-6">{u.email}</td>
+                users.map((user) => (
+                  <tr
+                    key={user.id}
+                    className="border-b border-gray-800 text-gray-300 hover:bg-gray-800/50 transition"
+                  >
+                    <td className="py-4 px-6 font-medium text-white">
+                      {user.name}
+                    </td>
+
+                    <td className="py-4 px-6">
+                      {user.email}
+                    </td>
+
                     <td className="py-4 px-6">
                       <span
                         className={`px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${
-                          u.role === 'admin'
+                          user.role === 'admin'
                             ? 'bg-purple-500/10 text-purple-400'
-                            : u.role === 'staff'
+                            : user.role === 'staff'
                               ? 'bg-blue-500/10 text-blue-400'
                               : 'bg-gray-500/10 text-gray-400'
                         }`}
                       >
-                        {u.role}
+                        {user.role}
                       </span>
                     </td>
+
                     <td className="py-4 px-6 text-sm">
-                      {new Date(u.created_at).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                      })}
+                      {user.created_at
+                        ? new Date(
+                            user.created_at
+                          ).toLocaleDateString(
+                            'en-US',
+                            {
+                              year: 'numeric',
+                              month: 'short',
+                              day: 'numeric',
+                            }
+                          )
+                        : '—'}
                     </td>
                   </tr>
                 ))

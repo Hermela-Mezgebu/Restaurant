@@ -1,4 +1,4 @@
-import api from './api';
+import { apiFetch } from './api';
 
 export interface User {
   id: number;
@@ -8,25 +8,71 @@ export interface User {
 }
 
 interface LoginResponse {
-  token: string;
-  user: User;
+  success?: boolean;
+  message?: string;
+  data: {
+    access_token: string;
+    token_type?: string;
+    expires_in?: number;
+    user: User;
+  };
 }
 
-export const login = async (email: string, password: string) => {
-  const { data } = await api.post<LoginResponse>('/auth/login', { email, password });
-  localStorage.setItem('token', data.token);
-  localStorage.setItem('user', JSON.stringify(data.user));
-  return data.user;
+export const login = async (
+  email: string,
+  password: string
+) => {
+  const response = await apiFetch<LoginResponse>(
+    '/auth/login',
+    {
+      method: 'POST',
+      body: JSON.stringify({
+        email,
+        password,
+      }),
+    }
+  );
+
+  const token = response.data.access_token;
+  const user = response.data.user;
+
+  localStorage.setItem('token', token);
+  localStorage.setItem('user', JSON.stringify(user));
+
+  return user;
 };
 
-export const register = async (name: string, email: string, password: string, role: string) => {
-  const { data } = await api.post('/auth/register', { name, email, password, role });
-  return data;
+export const register = async (
+  name: string,
+  email: string,
+  password: string,
+  role: string
+) => {
+  const response = await apiFetch(
+    '/auth/register',
+    {
+      method: 'POST',
+      body: JSON.stringify({
+        name,
+        email,
+        password,
+        role,
+      }),
+    }
+  );
+
+  return response;
 };
 
 export const logout = async () => {
   try {
-    await api.post('/auth/logout');
+    await apiFetch('/auth/logout', {
+      method: 'POST',
+    });
+  } catch (error) {
+    // Even if the server rejects the token,
+    // we still want to log the user out locally.
+    console.error('Logout request failed:', error);
   } finally {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -34,24 +80,44 @@ export const logout = async () => {
 };
 
 export const getToken = () => {
-  if (typeof window === 'undefined') return null;
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
   return localStorage.getItem('token');
 };
 
 export const getUser = (): User | null => {
-  if (typeof window === 'undefined') return null;
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
   const user = localStorage.getItem('user');
-  return user ? JSON.parse(user) : null;
+
+  if (!user) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(user) as User;
+  } catch {
+    localStorage.removeItem('user');
+    return null;
+  }
 };
 
-export const isAuthenticated = () => !!getToken();
+export const isAuthenticated = () => {
+  return !!getToken();
+};
 
 export const isAdmin = () => {
   const user = getUser();
+
   return user?.role === 'admin';
 };
 
 export const isStaff = () => {
   const user = getUser();
+
   return user?.role === 'staff' || user?.role === 'admin';
 };
