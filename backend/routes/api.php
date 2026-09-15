@@ -33,39 +33,11 @@ Route::prefix('auth')->group(function () {
     });
 });
 
+// Restaurant routes (public)
+Route::get('restaurants', [RestaurantController::class, 'index']);
+Route::get('restaurants/{restaurant}', [RestaurantController::class, 'show']);
 
-/*
-|--------------------------------------------------------------------------
-| Public Restaurant Routes
-|--------------------------------------------------------------------------
-*/
-
-Route::get('restaurants', [
-    RestaurantController::class,
-    'index'
-]);
-
-Route::get('restaurants/{restaurant}/availability', [
-    RestaurantController::class,
-    'availability'
-]);
-
-Route::get('restaurants/{restaurant}', [
-    RestaurantController::class,
-    'show'
-]);
-
-
-/*
-|--------------------------------------------------------------------------
-| Protected Restaurant Routes
-|--------------------------------------------------------------------------
-|
-| The application uses JWT authentication through the "api" guard.
-| Therefore these routes use auth:api, not auth:sanctum.
-|
-*/
-
+// Restaurant routes (authenticated + staff/admin or owner)
 Route::middleware('auth:api')->group(function () {
 
     Route::post('restaurants', [
@@ -73,134 +45,38 @@ Route::middleware('auth:api')->group(function () {
         'store'
     ]);
 
-    Route::put('restaurants/{restaurant}', [
-        RestaurantController::class,
-        'update'
-    ]);
-
-    Route::delete('restaurants/{restaurant}', [
-        RestaurantController::class,
-        'destroy'
-    ]);
+    Route::put('restaurants/{restaurant}', [RestaurantController::class, 'update']);
+    Route::delete('restaurants/{restaurant}', [RestaurantController::class, 'destroy'])
+        ->middleware(AdminMiddleware::class);
 });
 
-
-/*
-|--------------------------------------------------------------------------
-| Table Routes
-|--------------------------------------------------------------------------
-|
-| Staff and admin only.
-|
-*/
-
-Route::middleware([
-    'auth:api',
-    StaffMiddleware::class,
-])->group(function () {
-
-    Route::get(
-        'restaurants/{restaurant}/tables',
-        [TableController::class, 'index']
-    );
-
-    Route::post(
-        'restaurants/{restaurant}/tables',
-        [TableController::class, 'store']
-    );
-
-    Route::put(
-        'restaurants/{restaurant}/tables/{table}',
-        [TableController::class, 'update']
-    );
-
-    Route::delete(
-        'restaurants/{restaurant}/tables/{table}',
-        [TableController::class, 'destroy']
-    );
+// Table routes (staff/admin)
+Route::middleware(['auth:api', StaffMiddleware::class])->group(function () {
+    Route::get('restaurants/{restaurant}/tables', [TableController::class, 'index']);
+    Route::post('restaurants/{restaurant}/tables', [TableController::class, 'store']);
+    Route::put('restaurants/{restaurant}/tables/{table}', [TableController::class, 'update']);
+    Route::delete('restaurants/{restaurant}/tables/{table}', [TableController::class, 'destroy']);
 });
 
-
-/*
-|--------------------------------------------------------------------------
-| Reservation Routes
-|--------------------------------------------------------------------------
-|
-| All reservation routes use the JWT "api" guard.
-|
-*/
-
+// Reservation routes (authenticated)
 Route::middleware('auth:api')->group(function () {
-
-    // List current user's reservations
-    Route::get(
-        'reservations',
-        [ReservationController::class, 'index']
-    );
-
-    // Create reservation
-    Route::post(
-        'reservations',
-        [ReservationController::class, 'store']
-    );
-
-    // View reservation
-    Route::get(
-        'reservations/{reservation}',
-        [ReservationController::class, 'show']
-    );
-
-    // Update reservation
-    Route::put(
-        'reservations/{reservation}',
-        [ReservationController::class, 'update']
-    );
-
-    // Cancel reservation
-    Route::delete(
-        'reservations/{reservation}',
-        [ReservationController::class, 'destroy']
-    );
+    Route::get('reservations', [ReservationController::class, 'index']);
+    Route::post('reservations', [ReservationController::class, 'store']);
+    Route::get('reservations/{reservation}', [ReservationController::class, 'show']);
+    Route::put('reservations/{reservation}', [ReservationController::class, 'update']);
+    Route::delete('reservations/{reservation}', [ReservationController::class, 'destroy']);
 });
 
+// Restaurant reservations (staff)
+Route::middleware(['auth:api', StaffMiddleware::class])
+    ->get('restaurants/{restaurant}/reservations', [ReservationController::class, 'restaurantReservations']);
 
-/*
-|--------------------------------------------------------------------------
-| Restaurant Reservation Management
-|--------------------------------------------------------------------------
-|
-| Staff and admin can view reservations for their restaurant.
-|
-*/
+// Reservation status (staff)
+Route::middleware(['auth:api', StaffMiddleware::class])
+    ->put('reservations/{reservation}/status', [ReservationController::class, 'updateStatus']);
 
-Route::middleware([
-    'auth:api',
-    StaffMiddleware::class,
-])->group(function () {
-
-    Route::get(
-        'restaurants/{restaurant}/reservations',
-        [ReservationController::class, 'restaurantReservations']
-    );
-
-    Route::put(
-        'reservations/{reservation}/status',
-        [ReservationController::class, 'updateStatus']
-    );
-});
-
-
-/*
-|--------------------------------------------------------------------------
-| Review Routes
-|--------------------------------------------------------------------------
-*/
-
-// Public reviews
-Route::get(
-    'restaurants/{restaurant}/reviews',
-    [ReviewController::class, 'index']
-);
+// Review routes
+Route::get('restaurants/{restaurant}/reviews', [ReviewController::class, 'index']);
 
 // Authenticated review actions
 Route::middleware('auth:api')->group(function () {
@@ -229,26 +105,10 @@ Route::get(
     [MenuItemController::class, 'index']
 );
 
-// Staff/admin menu management
-Route::middleware([
-    'auth:api',
-    StaffMiddleware::class,
-])->group(function () {
-
-    Route::post(
-        'restaurants/{restaurant}/menu',
-        [MenuItemController::class, 'store']
-    );
-
-    Route::put(
-        'menu-items/{menuItem}',
-        [MenuItemController::class, 'update']
-    );
-
-    Route::delete(
-        'menu-items/{menuItem}',
-        [MenuItemController::class, 'destroy']
-    );
+Route::middleware(['auth:api', StaffMiddleware::class])->group(function () {
+    Route::post('restaurants/{restaurant}/menu', [MenuItemController::class, 'store']);
+    Route::put('menu-items/{menuItem}', [MenuItemController::class, 'update']);
+    Route::delete('menu-items/{menuItem}', [MenuItemController::class, 'destroy']);
 });
 
 

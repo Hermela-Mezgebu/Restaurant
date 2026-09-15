@@ -30,13 +30,14 @@ class User extends Authenticatable implements JWTSubject
         'remember_token',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
-    }
+protected function casts(): array
+{
+    return [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+        'is_active' => 'boolean',
+    ];
+}
 
     public function restaurant(): BelongsTo
     {
@@ -77,4 +78,23 @@ class User extends Authenticatable implements JWTSubject
     {
         return [];
     }
+
+    public function suspend(User $user): JsonResponse
+{
+    if ($user->isAdmin()) {
+        return $this->errorResponse(
+            'Admin users cannot be suspended.',
+            422
+        );
+    }
+
+    $user->update([
+        'is_active' => false,
+    ]);
+
+    return $this->successResponse(
+        $user->fresh(),
+        'User suspended successfully'
+    );
+}
 }

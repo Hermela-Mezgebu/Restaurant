@@ -40,6 +40,7 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
             'role' => 'diner',
             'phone' => $request->phone,
+            'is_active' => true,
         ]);
 
         /*
@@ -146,6 +147,21 @@ class AuthController extends Controller
     public function updateProfile(Request $request): JsonResponse
     {
         $user = auth('api')->user();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Prevent suspended users from using authenticated endpoints
+        |--------------------------------------------------------------------------
+        */
+
+        if (!$user->is_active) {
+            auth()->logout();
+
+            return $this->errorResponse(
+                'Your account has been suspended.',
+                403
+            );
+        }
 
         $validator = Validator::make($request->all(), [
             'name' => 'sometimes|string|max:255',
