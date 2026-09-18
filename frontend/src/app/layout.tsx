@@ -1,17 +1,15 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import AppShell from "@/components/AppShell";
 
 const inter = Inter({
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "ReserveEase - Find Your Perfect Table",
-  description:
-    "Discover and book the best restaurants in town. Reserve your table instantly with ReserveEase.",
+  title: "ReserveEase",
+  description: "Restaurant reservations and table management platform",
 };
 
 export default function RootLayout({
@@ -20,11 +18,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.className} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-gray-950 text-gray-100">
-        <Navbar />
-        <main className="flex-1">{children}</main>
-      
+    <html lang="en">
+      <body className={inter.className}>
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );
