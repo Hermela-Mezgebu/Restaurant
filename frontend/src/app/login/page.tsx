@@ -1,104 +1,178 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { login } from '@/lib/auth';
-import { FiMail, FiLock, FiEye, FiEyeOff } from 'react-icons/fi';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { login } from "@/lib/auth";
+import { FiMail, FiLock, FiEye, FiEyeOff } from "react-icons/fi";
 
 export default function LoginPage() {
-  const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+const router = useRouter();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-    try {
-      const user = await login(email, password);
-      const redirect = user.role === 'admin' ? '/admin' : user.role === 'staff' ? '/dashboard' : '/restaurants';
-      router.push(redirect);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Invalid email or password');
-    } finally {
-      setLoading(false);
-    }
-  };
+const [email, setEmail] = useState("");
+const [password, setPassword] = useState("");
+const [showPassword, setShowPassword] = useState(false);
+const [error, setError] = useState("");
+const [loading, setLoading] = useState(false);
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-950 px-4">
-      <div className="w-full max-w-md">
-        <div className="bg-gray-900 rounded-2xl p-8 shadow-xl border border-gray-800">
-          <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold text-white">Welcome Back</h1>
-            <p className="text-gray-400 mt-1">Sign in to your account</p>
+const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+e.preventDefault();
+
+setError("");
+setLoading(true);
+
+try {
+  // Login through the existing Laravel authentication system.
+  // The returned user contains the user's role.
+  const user = await login(email, password);
+
+  /*
+   * Role-based redirect:
+   *
+   * admin -> /admin
+   * staff -> /staff
+   * diner -> /restaurants
+   */
+  if (user.role === "admin") {
+    router.replace("/admin");
+  } else if (user.role === "staff") {
+    router.replace("/staff");
+  } else {
+    router.replace("/restaurants");
+  }
+} catch (err: any) {
+  console.error("Login error:", err);
+
+  setError(
+    err?.response?.data?.message ||
+      err?.message ||
+      "Invalid email or password"
+  );
+} finally {
+  setLoading(false);
+}
+
+
+};
+
+return ( <main className="min-h-screen bg-[#fcf9f8] flex items-center justify-center px-4"> <div className="w-full max-w-md"> <div className="bg-white rounded-2xl shadow-lg border border-[#ebe7e7] p-8">
+{/* Logo / Header */} <div className="text-center mb-8"> <div className="mx-auto mb-4 h-14 w-14 rounded-xl bg-[#01261f] flex items-center justify-center"> <span className="text-white text-2xl">🍽️</span> </div>
+
+        <h1 className="text-3xl font-bold text-[#01261f]">
+          Welcome Back
+        </h1>
+
+        <p className="mt-2 text-sm text-[#717976]">
+          Sign in to your DINEET account
+        </p>
+      </div>
+
+      {/* Error */}
+      {error && (
+        <div className="mb-5 rounded-lg bg-[#ffdad6] border border-[#ffb4ab] px-4 py-3 text-sm text-[#93000a]">
+          {error}
+        </div>
+      )}
+
+      {/* Login Form */}
+      <form onSubmit={handleSubmit} className="space-y-5">
+        {/* Email */}
+        <div>
+          <label
+            htmlFor="email"
+            className="block text-sm font-semibold text-[#1c1b1b] mb-2"
+          >
+            Email Address
+          </label>
+
+          <div className="relative">
+            <FiMail
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-[#717976]"
+              size={18}
+            />
+
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email"
+              autoComplete="email"
+              required
+              disabled={loading}
+              className="w-full rounded-lg border border-[#c1c8c4] bg-[#fcf9f8] py-3 pl-10 pr-4 text-sm text-[#1c1b1b] outline-none transition focus:border-[#01261f] focus:ring-2 focus:ring-[#c5eadf] disabled:opacity-60"
+            />
           </div>
+        </div>
 
-          {error && (
-            <div className="bg-red-900/30 border border-red-700 text-red-300 px-4 py-3 rounded-lg mb-6 text-sm">
-              {error}
-            </div>
-          )}
+        {/* Password */}
+        <div>
+          <label
+            htmlFor="password"
+            className="block text-sm font-semibold text-[#1c1b1b] mb-2"
+          >
+            Password
+          </label>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label className="block text-sm text-gray-400 mb-1.5">Email</label>
-              <div className="relative">
-                <FiMail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  placeholder="you@example.com"
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg pl-10 pr-3 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                />
-              </div>
-            </div>
+          <div className="relative">
+            <FiLock
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-[#717976]"
+              size={18}
+            />
 
-            <div>
-              <label className="block text-sm text-gray-400 mb-1.5">Password</label>
-              <div className="relative">
-                <FiLock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  placeholder="••••••••"
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg pl-10 pr-10 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300"
-                >
-                  {showPassword ? <FiEyeOff className="w-4 h-4" /> : <FiEye className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
+            <input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter your password"
+              autoComplete="current-password"
+              required
+              disabled={loading}
+              className="w-full rounded-lg border border-[#c1c8c4] bg-[#fcf9f8] py-3 pl-10 pr-12 text-sm text-[#1c1b1b] outline-none transition focus:border-[#01261f] focus:ring-2 focus:ring-[#c5eadf] disabled:opacity-60"
+            />
 
             <button
-              type="submit"
+              type="button"
+              onClick={() => setShowPassword((current) => !current)}
               disabled={loading}
-              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label={
+                showPassword ? "Hide password" : "Show password"
+              }
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#717976] hover:text-[#01261f] disabled:opacity-50"
             >
-              {loading ? 'Signing in...' : 'Sign In'}
+              {showPassword ? (
+                <FiEyeOff size={18} />
+              ) : (
+                <FiEye size={18} />
+              )}
             </button>
-          </form>
-
-          <p className="text-gray-400 text-center mt-6 text-sm">
-            Don&apos;t have an account?{' '}
-            <Link href="/register" className="text-emerald-400 hover:text-emerald-300 font-medium">
-              Create one
-            </Link>
-          </p>
+          </div>
         </div>
+
+        {/* Submit */}
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full rounded-lg bg-[#01261f] py-3 text-sm font-bold text-white transition hover:bg-[#1a3c34] disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {loading ? "Signing in..." : "Sign In"}
+        </button>
+      </form>
+
+      {/* Register */}
+      <div className="mt-6 text-center text-sm text-[#717976]">
+        Don't have an account?{" "}
+        <Link
+          href="/register"
+          className="font-semibold text-[#934a2d] hover:underline"
+        >
+          Create an account
+        </Link>
       </div>
     </div>
-  );
+  </div>
+</main>
+
+);
 }
