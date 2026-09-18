@@ -38,7 +38,7 @@ class AuthController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => 'diner',
+            'role' => $request->role,
             'phone' => $request->phone,
             'is_active' => true,
         ]);
@@ -58,6 +58,11 @@ class AuthController extends Controller
         return $this->successResponse(
             [
                 'user' => new UserResource($user),
+
+                // Return role explicitly so the frontend
+                // can redirect the user to the correct dashboard.
+                'role' => $user->role,
+
                 'access_token' => $token,
                 'token_type' => 'bearer',
             ],
@@ -68,6 +73,12 @@ class AuthController extends Controller
 
     /**
      * Login existing user.
+     *
+     * Role-based destination is handled by the frontend:
+     *
+     * admin  -> /admin
+     * staff  -> /staff
+     * diner  -> /restaurants
      */
     public function login(Request $request): JsonResponse
     {
@@ -89,14 +100,12 @@ class AuthController extends Controller
         ];
 
         /*
-         * IMPORTANT:
          * Use the API guard explicitly.
          */
         $token = auth('api')->attempt($credentials);
 
         /*
-         * attempt() should return false when credentials
-         * are invalid.
+         * Invalid email/password.
          */
         if (!$token) {
             return $this->errorResponse(
@@ -106,9 +115,7 @@ class AuthController extends Controller
         }
 
         /*
-         * JWT-auth should return a STRING token.
-         * If it returns boolean true, something is wrong
-         * with the JWT configuration/package.
+         * JWT-auth should return a string token.
          */
         if (!is_string($token) || empty($token)) {
             return $this->errorResponse(
@@ -117,11 +124,48 @@ class AuthController extends Controller
             );
         }
 
+        /*
+         * Get the authenticated user.
+         */
         $user = auth('api')->user();
 
+        /*
+         * Prevent suspended/inactive users from logging in.
+         */
+        if (!$user->is_active) {
+            auth('api')->logout();
+
+            return $this->errorResponse(
+                'Your account has been suspended.',
+                403
+            );
+        }
+
+        /*
+         * Make sure the user has a valid application role.
+         */
+        if (!in_array($user->role, ['diner', 'staff', 'admin'], true)) {
+            auth('api')->logout();
+
+            return $this->errorResponse(
+                'Your account has an invalid role.',
+                403
+            );
+        }
+
+        /*
+         * Return the authenticated user and role.
+         *
+         * The frontend will use this role to decide where
+         * the user should be redirected.
+         */
         return $this->successResponse(
             [
                 'user' => new UserResource($user),
+
+                // Explicit role for frontend role-based redirect.
+                'role' => $user->role,
+
                 'access_token' => $token,
                 'token_type' => 'bearer',
             ],
@@ -155,7 +199,7 @@ class AuthController extends Controller
         */
 
         if (!$user->is_active) {
-            auth()->logout();
+            auth('api')->logout();
 
             return $this->errorResponse(
                 'Your account has been suspended.',
