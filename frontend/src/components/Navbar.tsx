@@ -34,36 +34,52 @@ export default function Navbar() {
     router.push('/');
   };
 
+  /*
+   * Navigation link styling
+   * Uses the same colors as the DINEET footer.
+   */
   const linkClass = (path: string) =>
     `rounded-lg px-3 py-2 text-sm font-medium transition ${
       pathname === path
-        ? 'bg-orange-50 text-orange-700 dark:bg-orange-950/40 dark:text-orange-300'
-        : 'text-stone-600 hover:bg-stone-100 hover:text-orange-700 dark:text-stone-300 dark:hover:bg-stone-800 dark:hover:text-orange-300'
+        ? 'bg-[#01261f] text-[#ffe088]'
+        : 'text-[#717976] hover:bg-[#e5e2e1] hover:text-[#01261f]'
     }`;
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-stone-200 bg-white/95 shadow-sm backdrop-blur-md transition-colors dark:border-stone-800 dark:bg-stone-950/95">
+    <nav className="sticky top-0 z-50 border-b border-[#c1c8c4]/40 bg-[#f0edec]/95 shadow-sm backdrop-blur-md transition-colors dark:border-[#c1c8c4]/20 dark:bg-[#01261f]/95">
+
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+
         <div className="flex h-16 items-center justify-between">
 
-          {/* Logo */}
+          {/* =====================================================
+              LOGO
+          ====================================================== */}
           <Link
             href="/"
             className="group flex items-center gap-2"
             onClick={() => setMobileOpen(false)}
           >
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-600 text-white shadow-sm transition group-hover:bg-orange-700 dark:bg-orange-500 dark:group-hover:bg-orange-400">
+            {/* Logo Icon */}
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#01261f] text-[#ffe088] transition group-hover:bg-[#02382e]">
               <span className="text-lg">🍽</span>
             </div>
 
-            <span className="font-serif text-2xl font-bold tracking-tight text-stone-900 dark:text-stone-100">
-              Reserve<span className="text-orange-600 dark:text-orange-400">Ease</span>
+            {/* Brand Name */}
+            <span className="font-serif text-2xl font-bold tracking-tight text-[#01261f] dark:text-[#f0edec]">
+              DINEET
             </span>
           </Link>
 
-          {/* Desktop Navigation */}
+          {/* =====================================================
+              DESKTOP NAVIGATION
+          ====================================================== */}
           <div className="hidden items-center gap-1 md:flex">
-            <Link href="/" className={linkClass('/')}>
+
+            <Link
+              href="/"
+              className={linkClass('/')}
+            >
               Home
             </Link>
 
@@ -91,56 +107,69 @@ export default function Navbar() {
                 Admin
               </Link>
             )}
+
           </div>
 
-          {/* Desktop Right Side */}
+          {/* =====================================================
+              DESKTOP RIGHT SIDE
+          ====================================================== */}
           <div className="hidden items-center gap-3 md:flex">
 
+            {/* Theme Toggle */}
             <ThemeToggle />
 
-            <div className="h-7 w-px bg-stone-200 dark:bg-stone-800" />
+            {/* Divider */}
+            <div className="h-7 w-px bg-[#c1c8c4]/60 dark:bg-[#c1c8c4]/30" />
 
             {auth ? (
               <>
-                <span className="max-w-[160px] truncate text-sm font-medium text-stone-600 dark:text-stone-300">
+                {/* User Name */}
+                <span className="max-w-[160px] truncate text-sm font-medium text-[#717976] dark:text-[#c1c8c4]">
                   {user?.name}
                 </span>
 
+                {/* Logout */}
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="rounded-xl border border-stone-200 bg-white px-4 py-2 text-sm font-semibold text-stone-700 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300 dark:hover:border-red-900 dark:hover:bg-red-950/40 dark:hover:text-red-400"
+                  className="rounded-xl border border-[#c1c8c4] bg-transparent px-4 py-2 text-sm font-semibold text-[#01261f] transition hover:bg-[#01261f] hover:text-[#ffe088] dark:border-[#c1c8c4]/40 dark:text-[#f0edec] dark:hover:bg-[#ffe088] dark:hover:text-[#01261f]"
                 >
                   Logout
                 </button>
               </>
             ) : (
               <>
+                {/* Sign In */}
                 <Link
                   href="/login"
-                  className="rounded-xl px-3 py-2 text-sm font-semibold text-stone-600 transition hover:bg-stone-100 hover:text-orange-700 dark:text-stone-300 dark:hover:bg-stone-800 dark:hover:text-orange-300"
+                  className="rounded-xl px-3 py-2 text-sm font-semibold text-[#717976] transition hover:bg-[#e5e2e1] hover:text-[#01261f] dark:text-[#c1c8c4] dark:hover:bg-[#02382e] dark:hover:text-[#ffe088]"
                 >
                   Sign In
                 </Link>
 
+                {/* Register */}
                 <Link
                   href="/register"
-                  className="rounded-xl bg-orange-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-orange-700 hover:shadow-md dark:bg-orange-500 dark:text-stone-950 dark:hover:bg-orange-400"
+                  className="rounded-xl bg-[#01261f] px-4 py-2 text-sm font-semibold text-[#ffe088] shadow-sm transition hover:bg-[#02382e] hover:shadow-md"
                 >
                   Register
                 </Link>
               </>
             )}
+
           </div>
 
-          {/* Mobile Controls */}
+          {/* =====================================================
+              MOBILE CONTROLS
+          ====================================================== */}
           <div className="flex items-center gap-2 md:hidden">
+
             <ThemeToggle />
 
             <button
               type="button"
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="flex h-10 w-10 items-center justify-center rounded-xl border border-stone-200 bg-white text-stone-700 transition hover:border-orange-300 hover:bg-orange-50 hover:text-orange-700 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-200 dark:hover:border-orange-700 dark:hover:bg-orange-950/40 dark:hover:text-orange-300"
+              className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#c1c8c4] bg-transparent text-[#01261f] transition hover:border-[#01261f] hover:bg-[#e5e2e1] dark:border-[#c1c8c4]/40 dark:text-[#f0edec] dark:hover:border-[#ffe088] dark:hover:bg-[#02382e]"
               aria-label="Toggle menu"
               aria-expanded={mobileOpen}
             >
@@ -167,13 +196,18 @@ export default function Navbar() {
                 )}
               </svg>
             </button>
+
           </div>
+
         </div>
 
-        {/* Mobile Navigation */}
+        {/* =====================================================
+            MOBILE NAVIGATION
+        ====================================================== */}
         {mobileOpen && (
-          <div className="border-t border-stone-200 py-4 dark:border-stone-800 md:hidden">
+          <div className="border-t border-[#c1c8c4]/40 py-4 dark:border-[#c1c8c4]/20 md:hidden">
 
+            {/* Navigation Links */}
             <div className="space-y-1">
 
               <Link
@@ -211,45 +245,58 @@ export default function Navbar() {
                   Admin
                 </Link>
               )}
+
             </div>
 
-            <div className="my-4 h-px bg-stone-200 dark:bg-stone-800" />
+            {/* Divider */}
+            <div className="my-4 h-px bg-[#c1c8c4]/40 dark:bg-[#c1c8c4]/20" />
+
+            {/* =================================================
+                MOBILE AUTH
+            ================================================== */}
 
             {auth ? (
               <div className="space-y-2">
 
-                <div className="rounded-xl bg-stone-50 px-4 py-3 dark:bg-stone-900">
-                  <p className="text-xs font-medium uppercase tracking-wide text-stone-400">
+                {/* User Information */}
+                <div className="rounded-xl bg-[#e5e2e1] px-4 py-3 dark:bg-[#02382e]">
+
+                  <p className="text-xs font-medium uppercase tracking-wide text-[#717976] dark:text-[#c1c8c4]">
                     Signed in as
                   </p>
 
-                  <p className="mt-1 truncate text-sm font-semibold text-stone-800 dark:text-stone-200">
+                  <p className="mt-1 truncate text-sm font-semibold text-[#01261f] dark:text-[#f0edec]">
                     {user?.name}
                   </p>
+
                 </div>
 
+                {/* Logout */}
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="block w-full rounded-xl px-4 py-3 text-left text-sm font-semibold text-red-600 transition hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40"
+                  className="block w-full rounded-xl px-4 py-3 text-left text-sm font-semibold text-[#01261f] transition hover:bg-[#e5e2e1] dark:text-[#ffe088] dark:hover:bg-[#02382e]"
                 >
                   Logout
                 </button>
+
               </div>
             ) : (
               <div className="space-y-2">
 
+                {/* Sign In */}
                 <Link
                   href="/login"
-                  className="block rounded-xl px-4 py-3 text-sm font-semibold text-stone-700 transition hover:bg-stone-100 hover:text-orange-700 dark:text-stone-300 dark:hover:bg-stone-800 dark:hover:text-orange-300"
+                  className="block rounded-xl px-4 py-3 text-sm font-semibold text-[#717976] transition hover:bg-[#e5e2e1] hover:text-[#01261f] dark:text-[#c1c8c4] dark:hover:bg-[#02382e] dark:hover:text-[#ffe088]"
                   onClick={() => setMobileOpen(false)}
                 >
                   Sign In
                 </Link>
 
+                {/* Create Account */}
                 <Link
                   href="/register"
-                  className="block rounded-xl bg-orange-600 px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-orange-700 dark:bg-orange-500 dark:text-stone-950 dark:hover:bg-orange-400"
+                  className="block rounded-xl bg-[#01261f] px-4 py-3 text-center text-sm font-semibold text-[#ffe088] transition hover:bg-[#02382e]"
                   onClick={() => setMobileOpen(false)}
                 >
                   Create Account
@@ -257,8 +304,10 @@ export default function Navbar() {
 
               </div>
             )}
+
           </div>
         )}
+
       </div>
     </nav>
   );
