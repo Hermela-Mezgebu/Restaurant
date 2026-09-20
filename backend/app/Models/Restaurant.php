@@ -30,16 +30,25 @@ class Restaurant extends Model
         'cover_image',
         'state',
         'approved',
+        'is_active',
         'rejection_reason',
     ];
 
     protected $casts = [
         'latitude' => 'decimal:7',
         'longitude' => 'decimal:7',
+        'approved' => 'boolean',
+        'is_active' => 'boolean',
     ];
 
+    /*
+    |--------------------------------------------------------------------------
+    | RELATIONSHIPS
+    |--------------------------------------------------------------------------
+    */
+
     /**
-     * Restaurant owner / manager.
+     * Staff member / owner who submitted the restaurant.
      */
     public function owner(): BelongsTo
     {
@@ -76,5 +85,33 @@ class Restaurant extends Model
     public function reservations(): HasMany
     {
         return $this->hasMany(Reservation::class, 'restaurant_id');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | STATUS HELPERS
+    |--------------------------------------------------------------------------
+    */
+
+    public function isApproved(): bool
+    {
+        return $this->approved === true;
+    }
+
+    public function isPending(): bool
+    {
+        return $this->approved === false
+            && $this->rejection_reason === null;
+    }
+
+    public function isRejected(): bool
+    {
+        return !empty($this->rejection_reason);
+    }
+
+    public function isAvailable(): bool
+    {
+        return $this->approved === true
+            && $this->is_active === true;
     }
 }
