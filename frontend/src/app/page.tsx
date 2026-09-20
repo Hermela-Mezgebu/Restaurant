@@ -4,41 +4,146 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
+import Navbar from "@/components/Navbar";
+
 import {
-  ArrowRight, Award, Badge, BadgeCheck, Bell, Bot, Box, Building2,
-  CalendarDays, CheckCircle2, Clock3, Coffee, Compass, Flame,
-  Grid2X2, Heart, HelpCircle, Image as ImageIcon, Leaf, LoaderCircle, Lock,
-  Map, MapPin, Menu, MessageCircle, Music2, QrCode, Search, Sparkles, Star, Table2,
-  Utensils, Users, Wifi, X, Zap,
+  ArrowRight,
+  Award,
+  Badge,
+  BadgeCheck,
+  Bell,
+  Bot,
+  Box,
+  Building2,
+  CalendarDays,
+  CheckCircle2,
+  Clock3,
+  Coffee,
+  Compass,
+  Flame,
+  Grid2X2,
+  Heart,
+  HelpCircle,
+  Image as ImageIcon,
+  Leaf,
+  LoaderCircle,
+  Lock,
+  Map,
+  MapPin,
+  Menu,
+  MessageCircle,
+  Music2,
+  QrCode,
+  Search,
+  Sparkles,
+  Star,
+  Table2,
+  Utensils,
+  Users,
+  Wifi,
+  X,
+  Zap,
 } from "lucide-react";
 
 type IconName =
-  | "table_restaurant" | "location_on" | "notifications" | "arrow_forward"
-  | "menu" | "close" | "local_fire_department" | "stars" | "explore"
-  | "calendar_today" | "schedule" | "group" | "progress_activity" | "search"
-  | "local_cafe" | "deck" | "table_bar" | "eco" | "music_note" | "verified"
-  | "grade" | "restaurant_menu" | "restaurant" | "favorite" | "favorite_border"
-  | "map" | "grid_view" | "smart_toy" | "contactless" | "qr_code_2" | "domain"
-  | "check_circle" | "badge" | "workspace_premium" | "bolt" | "lock"
-  | "view_in_ar" | "panorama" | "chat";
+  | "table_restaurant"
+  | "location_on"
+  | "notifications"
+  | "arrow_forward"
+  | "menu"
+  | "close"
+  | "local_fire_department"
+  | "stars"
+  | "explore"
+  | "calendar_today"
+  | "schedule"
+  | "group"
+  | "progress_activity"
+  | "search"
+  | "local_cafe"
+  | "deck"
+  | "table_bar"
+  | "eco"
+  | "music_note"
+  | "verified"
+  | "grade"
+  | "restaurant_menu"
+  | "restaurant"
+  | "favorite"
+  | "favorite_border"
+  | "map"
+  | "grid_view"
+  | "smart_toy"
+  | "contactless"
+  | "qr_code_2"
+  | "domain"
+  | "check_circle"
+  | "badge"
+  | "workspace_premium"
+  | "bolt"
+  | "lock"
+  | "view_in_ar"
+  | "panorama"
+  | "chat";
 
 const iconMap = {
-  table_restaurant: Table2, location_on: MapPin, notifications: Bell,
-  arrow_forward: ArrowRight, menu: Menu, close: X,
-  local_fire_department: Flame, stars: Sparkles, explore: Compass,
-  calendar_today: CalendarDays, schedule: Clock3, group: Users,
-  progress_activity: LoaderCircle, search: Search, local_cafe: Coffee,
-  deck: Compass, table_bar: Table2, eco: Leaf, music_note: Music2,
-  verified: BadgeCheck, grade: Star, restaurant_menu: Utensils, restaurant: Utensils,
-  favorite: Heart, favorite_border: Heart, map: Map, grid_view: Grid2X2,
-  smart_toy: Bot, contactless: Wifi, qr_code_2: QrCode, chat: MessageCircle, domain: Building2,
-  check_circle: CheckCircle2, badge: Badge, workspace_premium: Award, bolt: Zap,
-  lock: Lock, view_in_ar: Box, panorama: ImageIcon,
+  table_restaurant: Table2,
+  location_on: MapPin,
+  notifications: Bell,
+  arrow_forward: ArrowRight,
+  menu: Menu,
+  close: X,
+  local_fire_department: Flame,
+  stars: Sparkles,
+  explore: Compass,
+  calendar_today: CalendarDays,
+  schedule: Clock3,
+  group: Users,
+  progress_activity: LoaderCircle,
+  search: Search,
+  local_cafe: Coffee,
+  deck: Compass,
+  table_bar: Table2,
+  eco: Leaf,
+  music_note: Music2,
+  verified: BadgeCheck,
+  grade: Star,
+  restaurant_menu: Utensils,
+  restaurant: Utensils,
+  favorite: Heart,
+  favorite_border: Heart,
+  map: Map,
+  grid_view: Grid2X2,
+  smart_toy: Bot,
+  contactless: Wifi,
+  qr_code_2: QrCode,
+  chat: MessageCircle,
+  domain: Building2,
+  check_circle: CheckCircle2,
+  badge: Badge,
+  workspace_premium: Award,
+  bolt: Zap,
+  lock: Lock,
+  view_in_ar: Box,
+  panorama: ImageIcon,
 } as const;
 
-function Icon({ name, className = "h-5 w-5" }: { name: IconName; className?: string }) {
+function Icon({
+  name,
+  className = "h-5 w-5",
+}: {
+  name: IconName;
+  className?: string;
+}) {
   const Component = iconMap[name] ?? HelpCircle;
-  return <Component aria-hidden="true" className={className} strokeWidth={1.9} />;
+
+  return (
+    <Component
+      aria-hidden="true"
+      className={className}
+      strokeWidth={1.9}
+    />
+  );
 }
 
 type Restaurant = {
@@ -76,15 +181,6 @@ type RestaurantListResponse =
       total?: number;
     };
 
-type Table = {
-  id: number;
-  restaurant_id: number;
-  table_number: number | string;
-  capacity: number;
-  seating_type?: string | null;
-  status?: string | null;
-};
-
 type AvailabilitySlot = {
   time?: string;
   reservation_time?: string;
@@ -108,12 +204,6 @@ type FloorTable = {
   deposit: number;
 };
 
-const FALLBACK_IMAGE =
-  "https://images.unsplash.com/photo-1515003197210-e0cd71810b5f?auto=format&fit=crop&w=1400&q=85";
-
-const HERO_IMAGE =
-  "https://images.unsplash.com/photo-1515003197210-e0cd71810b5f?auto=format&fit=crop&w=2200&q=90";
-
 const neighborhoodOptions = [
   "Bole",
   "Kazanchis",
@@ -122,12 +212,36 @@ const neighborhoodOptions = [
   "Sarbet",
 ];
 
-const experienceFilters: { id: string; label: string; icon: IconName }[] = [
-  { id: "all", label: "All Venues", icon: "restaurant" },
-  { id: "buna", label: "Buna Ceremonies", icon: "local_cafe" },
-  { id: "skyline", label: "Skyline & Balconies", icon: "deck" },
-  { id: "mesob", label: "Intimate Mesob", icon: "table_bar" },
-  { id: "fasting", label: "Ye'tsom Specialists", icon: "eco" },
+const experienceFilters: {
+  id: string;
+  label: string;
+  icon: IconName;
+}[] = [
+  {
+    id: "all",
+    label: "All Venues",
+    icon: "restaurant",
+  },
+  {
+    id: "buna",
+    label: "Buna Ceremonies",
+    icon: "local_cafe",
+  },
+  {
+    id: "skyline",
+    label: "Skyline & Balconies",
+    icon: "deck",
+  },
+  {
+    id: "mesob",
+    label: "Intimate Mesob",
+    icon: "table_bar",
+  },
+  {
+    id: "fasting",
+    label: "Ye'tsom Specialists",
+    icon: "eco",
+  },
 ];
 
 const floorTables: FloorTable[] = [
@@ -210,7 +324,11 @@ const floorTables: FloorTable[] = [
 
 function getToday() {
   const now = new Date();
-  const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+
+  const local = new Date(
+    now.getTime() - now.getTimezoneOffset() * 60000
+  );
+
   return local.toISOString().split("T")[0];
 }
 
@@ -240,14 +358,32 @@ function formatTime(time: string) {
   return `${displayHour}:${minute} ${suffix}`;
 }
 
+/**
+ * Get the restaurant's real image from the Laravel response.
+ *
+ * Priority:
+ * 1. restaurant.image
+ * 2. first image in restaurant.photos
+ * 3. first image in JSON photos string
+ *
+ * No hard-coded stock restaurant image is used.
+ */
 function getRestaurantImage(restaurant: Restaurant) {
-  if (restaurant.image) return restaurant.image;
+  if (restaurant.image?.trim()) {
+    return restaurant.image;
+  }
 
-  if (Array.isArray(restaurant.photos) && restaurant.photos.length > 0) {
+  if (
+    Array.isArray(restaurant.photos) &&
+    restaurant.photos.length > 0
+  ) {
     return restaurant.photos[0];
   }
 
-  if (typeof restaurant.photos === "string" && restaurant.photos.trim()) {
+  if (
+    typeof restaurant.photos === "string" &&
+    restaurant.photos.trim()
+  ) {
     try {
       const parsed = JSON.parse(restaurant.photos);
 
@@ -259,7 +395,7 @@ function getRestaurantImage(restaurant: Restaurant) {
     }
   }
 
-  return FALLBACK_IMAGE;
+  return null;
 }
 
 function getRestaurantCategory(restaurant: Restaurant) {
@@ -302,7 +438,10 @@ function getRestaurantDescription(restaurant: Restaurant) {
   return "A curated dining destination in Addis Ababa.";
 }
 
-function matchesFilter(restaurant: Restaurant, filter: string) {
+function matchesFilter(
+  restaurant: Restaurant,
+  filter: string
+) {
   if (filter === "all") return true;
 
   const value = `${restaurant.name ?? ""} ${
@@ -366,29 +505,37 @@ export default function HomePage() {
   const router = useRouter();
 
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
-  const [loadingRestaurants, setLoadingRestaurants] = useState(true);
+  const [loadingRestaurants, setLoadingRestaurants] =
+    useState(true);
   const [restaurantError, setRestaurantError] = useState("");
 
   const [neighborhood, setNeighborhood] = useState("Bole");
-  const [reservationDate, setReservationDate] = useState(getToday());
-  const [reservationTime, setReservationTime] = useState("19:30");
+  const [reservationDate, setReservationDate] =
+    useState(getToday());
+  const [reservationTime, setReservationTime] =
+    useState("19:30");
   const [partySize, setPartySize] = useState(2);
 
   const [activeFilter, setActiveFilter] = useState("all");
 
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedTableId, setSelectedTableId] = useState(12);
+
   const [tableFilter, setTableFilter] = useState<
     "all" | "booth" | "mesob" | "terrace"
   >("all");
 
-  const [availabilityLoading, setAvailabilityLoading] = useState(false);
-  const [availabilityMessage, setAvailabilityMessage] = useState("");
+  const [availabilityLoading, setAvailabilityLoading] =
+    useState(false);
 
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [availabilityMessage, setAvailabilityMessage] =
+    useState("");
 
   const [favorites, setFavorites] = useState<number[]>([]);
 
+  /*
+   * LOAD REAL RESTAURANTS
+   */
   useEffect(() => {
     let cancelled = false;
 
@@ -397,9 +544,10 @@ export default function HomePage() {
         setLoadingRestaurants(true);
         setRestaurantError("");
 
-        const response = await apiFetch<ApiResponse<RestaurantListResponse>>(
-          "/restaurants?per_page=100&page=1"
-        );
+        const response =
+          await apiFetch<ApiResponse<RestaurantListResponse>>(
+            "/restaurants?per_page=100&page=1"
+          );
 
         if (cancelled) return;
 
@@ -408,13 +556,17 @@ export default function HomePage() {
         setRestaurants(
           data.filter(
             (restaurant) =>
-              restaurant.is_active !== false && restaurant.approved !== false
+              restaurant.is_active !== false &&
+              restaurant.approved !== false
           )
         );
       } catch (error) {
         if (cancelled) return;
 
-        console.error("Failed to load restaurants:", error);
+        console.error(
+          "Failed to load restaurants:",
+          error
+        );
 
         setRestaurantError(
           "We could not load the restaurants right now. Please try again."
@@ -433,23 +585,43 @@ export default function HomePage() {
     };
   }, []);
 
+  /*
+   * REAL RESTAURANT HERO IMAGE
+   *
+   * The first restaurant returned by Laravel is used.
+   */
+  const heroRestaurant = useMemo(() => {
+    return restaurants[0] ?? null;
+  }, [restaurants]);
+
+  const heroRestaurantImage = useMemo(() => {
+    if (!heroRestaurant) return null;
+
+    return getRestaurantImage(heroRestaurant);
+  }, [heroRestaurant]);
+
   const filteredRestaurants = useMemo(() => {
     return restaurants
-      .filter((restaurant) => matchesFilter(restaurant, activeFilter))
+      .filter((restaurant) =>
+        matchesFilter(restaurant, activeFilter)
+      )
       .slice(0, 8);
   }, [restaurants, activeFilter]);
 
   const selectedTable = useMemo(
     () =>
-      floorTables.find((table) => table.id === selectedTableId) ??
-      floorTables[0],
+      floorTables.find(
+        (table) => table.id === selectedTableId
+      ) ?? floorTables[0],
     [selectedTableId]
   );
 
   const visibleFloorTables = useMemo(() => {
     if (tableFilter === "all") return floorTables;
 
-    return floorTables.filter((table) => table.type === tableFilter);
+    return floorTables.filter(
+      (table) => table.type === tableFilter
+    );
   }, [tableFilter]);
 
   const availableRestaurantCount = restaurants.length;
@@ -457,29 +629,45 @@ export default function HomePage() {
   const averageRating = useMemo(() => {
     const ratings = restaurants
       .map((restaurant) => Number(restaurant.rating))
-      .filter((rating) => Number.isFinite(rating) && rating > 0);
+      .filter(
+        (rating) => Number.isFinite(rating) && rating > 0
+      );
 
     if (!ratings.length) return "—";
 
-    const total = ratings.reduce((sum, rating) => sum + rating, 0);
+    const total = ratings.reduce(
+      (sum, rating) => sum + rating,
+      0
+    );
 
     return (total / ratings.length).toFixed(2);
   }, [restaurants]);
 
   const totalReviews = useMemo(() => {
     return restaurants.reduce(
-      (sum, restaurant) => sum + Number(restaurant.reviews_count ?? 0),
+      (sum, restaurant) =>
+        sum + Number(restaurant.reviews_count ?? 0),
       0
     );
   }, [restaurants]);
 
-  const handleFindTables = async (event: FormEvent<HTMLFormElement>) => {
+  /*
+   * FIND TABLE
+   */
+  const handleFindTables = async (
+    event: FormEvent<HTMLFormElement>
+  ) => {
     event.preventDefault();
 
-    if (!reservationDate || !reservationTime || partySize < 1) {
+    if (
+      !reservationDate ||
+      !reservationTime ||
+      partySize < 1
+    ) {
       setAvailabilityMessage(
         "Please choose a date, time, and valid number of guests."
       );
+
       return;
     }
 
@@ -487,51 +675,48 @@ export default function HomePage() {
       setAvailabilityLoading(true);
       setAvailabilityMessage("");
 
-      /*
-       * We use the real backend availability endpoint here.
-       * The endpoint belongs to a specific restaurant, so the landing page
-       * first chooses a restaurant and then checks its real availability.
-       */
       const targetRestaurant =
         restaurants.find((restaurant) => {
-          const location = `${restaurant.address ?? ""} ${
-            restaurant.city ?? ""
-          }`.toLowerCase();
+          const location =
+            `${restaurant.address ?? ""} ${
+              restaurant.city ?? ""
+            }`.toLowerCase();
 
-          return (
-            neighborhood === "Bole"
-              ? location.includes("bole")
-              : neighborhood === "Kazanchis"
-                ? location.includes("kazanchis")
-                : neighborhood === "Piazza"
-                  ? location.includes("piazza")
-                  : neighborhood === "Sarbet"
-                    ? location.includes("sarbet")
-                    : location.includes("airport")
-          );
+          return neighborhood === "Bole"
+            ? location.includes("bole")
+            : neighborhood === "Kazanchis"
+              ? location.includes("kazanchis")
+              : neighborhood === "Piazza"
+                ? location.includes("piazza")
+                : neighborhood === "Sarbet"
+                  ? location.includes("sarbet")
+                  : location.includes("airport");
         }) ?? restaurants[0];
 
       if (!targetRestaurant) {
         setAvailabilityMessage(
           "No restaurants are currently available. Please try again shortly."
         );
+
         return;
       }
 
-      const response = await apiFetch<
-        ApiResponse<{ slots?: AvailabilitySlot[] }>
-      >(
-        `/restaurants/${targetRestaurant.id}/availability?date=${encodeURIComponent(
-          reservationDate
-        )}&time=${encodeURIComponent(
-          reservationTime
-        )}&party_size=${partySize}`
-      );
+      const response =
+        await apiFetch<
+          ApiResponse<{ slots?: AvailabilitySlot[] }>
+        >(
+          `/restaurants/${targetRestaurant.id}/availability?date=${encodeURIComponent(
+            reservationDate
+          )}&time=${encodeURIComponent(
+            reservationTime
+          )}&party_size=${partySize}`
+        );
 
       const slots = response?.data?.slots ?? [];
 
       const matchingSlot = slots.find((slot) => {
-        const slotTime = slot.time ?? slot.reservation_time ?? "";
+        const slotTime =
+          slot.time ?? slot.reservation_time ?? "";
 
         return (
           slotTime === reservationTime &&
@@ -544,20 +729,22 @@ export default function HomePage() {
         setAvailabilityMessage(
           `No table was found at ${formatTime(
             reservationTime
-          )} for ${partySize} guest${partySize === 1 ? "" : "s"} at ${
-            targetRestaurant.name
-          }.`
+          )} for ${partySize} guest${
+            partySize === 1 ? "" : "s"
+          } at ${targetRestaurant.name}.`
         );
 
         return;
       }
 
-      const tableId = matchingSlot.table_id ?? matchingSlot.id;
+      const tableId =
+        matchingSlot.table_id ?? matchingSlot.id;
 
       if (!tableId) {
         setAvailabilityMessage(
           "A table is available, but its table ID was not returned by the backend."
         );
+
         return;
       }
 
@@ -572,7 +759,10 @@ export default function HomePage() {
         `/restaurants/${targetRestaurant.id}/reserve?${params.toString()}`
       );
     } catch (error) {
-      console.error("Availability check failed:", error);
+      console.error(
+        "Availability check failed:",
+        error
+      );
 
       setAvailabilityMessage(
         "We could not check availability right now. Please try again."
@@ -582,182 +772,81 @@ export default function HomePage() {
     }
   };
 
-  const handleRestaurantBooking = (restaurant: Restaurant) => {
+  /*
+   * RESTAURANT BOOKING
+   */
+  const handleRestaurantBooking = (
+    restaurant: Restaurant
+  ) => {
     const params = new URLSearchParams({
       date: reservationDate,
       time: reservationTime,
       party_size: String(partySize),
     });
 
-    router.push(`/restaurants/${restaurant.id}/reserve?${params.toString()}`);
+    router.push(
+      `/restaurants/${restaurant.id}/reserve?${params.toString()}`
+    );
   };
 
+  /*
+   * FAVORITES
+   */
   const toggleFavorite = (restaurantId: number) => {
     setFavorites((current) =>
       current.includes(restaurantId)
-        ? current.filter((id) => id !== restaurantId)
+        ? current.filter(
+            (id) => id !== restaurantId
+          )
         : [...current, restaurantId]
     );
   };
 
+  /*
+   * SCROLL TO RESTAURANTS
+   */
   const scrollToRestaurants = () => {
     document
       .getElementById("restaurants")
-      ?.scrollIntoView({ behavior: "smooth" });
+      ?.scrollIntoView({
+        behavior: "smooth",
+      });
   };
 
   return (
     <div className="min-h-screen bg-[#fcf9f8] text-[#1c1b1b]">
       {/* =========================================================
-          HEADER
+          NAVBAR
       ========================================================== */}
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-[#c1c8c4]/30 bg-[#fcf9f8]/90 backdrop-blur-xl">
-        <div className="mx-auto flex h-20 max-w-[1440px] items-center justify-between gap-6 px-5 lg:px-16">
-          <div className="flex items-center gap-8">
-            <Link
-              href="/"
-              className="flex shrink-0 items-center gap-2"
-              aria-label="DINEET home"
-            >
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#01261f] text-[#ffe088] shadow-sm">
-                <Icon name="table_restaurant" className="h-[21px] w-[21px]" />
-              </div>
 
-              <span className="font-serif text-[23px] font-bold tracking-tight text-[#01261f]">
-                DINEET
-              </span>
-            </Link>
+     
 
-            <nav className="hidden xl:flex items-center gap-1">
-              <button
-                onClick={scrollToRestaurants}
-                className="rounded-lg px-3 py-2 text-sm font-semibold text-[#414846] transition hover:bg-[#f0edec] hover:text-[#01261f]"
-              >
-                Explore Venues
-              </button>
-
-              <button
-                onClick={() =>
-                  document
-                    .getElementById("technology")
-                    ?.scrollIntoView({ behavior: "smooth" })
-                }
-                className="rounded-lg px-3 py-2 text-sm font-semibold text-[#414846] transition hover:bg-[#f0edec] hover:text-[#01261f]"
-              >
-                Dining Experiences
-              </button>
-
-              <button
-                onClick={() =>
-                  document
-                    .getElementById("concierge")
-                    ?.scrollIntoView({ behavior: "smooth" })
-                }
-                className="rounded-lg px-3 py-2 text-sm font-semibold text-[#414846] transition hover:bg-[#f0edec] hover:text-[#01261f]"
-              >
-                Ask DINEET
-              </button>
-
-              <button
-                onClick={() =>
-                  document
-                    .getElementById("passport")
-                    ?.scrollIntoView({ behavior: "smooth" })
-                }
-                className="rounded-lg px-3 py-2 text-sm font-semibold text-[#414846] transition hover:bg-[#f0edec] hover:text-[#01261f]"
-              >
-                Dining Passport
-              </button>
-
-              <button
-                onClick={() =>
-                  document
-                    .getElementById("operators")
-                    ?.scrollIntoView({ behavior: "smooth" })
-                }
-                className="rounded-lg px-3 py-2 text-sm font-semibold text-[#414846] transition hover:bg-[#f0edec] hover:text-[#01261f]"
-              >
-                For Restaurants
-              </button>
-            </nav>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="hidden md:flex items-center gap-2 rounded-full bg-[#f6f3f2] px-3 py-1.5 text-xs font-semibold text-[#414846]">
-              <Icon name="location_on" className="h-[17px] w-[17px] text-[#934a2d]" />
-              Addis Ababa 🇪🇹
-            </div>
-
-            <button
-              type="button"
-              aria-label="Notifications"
-              className="hidden sm:flex h-9 w-9 items-center justify-center rounded-full text-[#414846] transition hover:bg-[#f0edec] hover:text-[#01261f]"
-            >
-              <Icon name="notifications" className="h-[21px] w-[21px]" />
-            </button>
-
-            <Link
-              href="/login"
-              className="hidden sm:block rounded-lg px-3 py-2 text-sm font-semibold text-[#01261f] transition hover:bg-[#f0edec]"
-            >
-              Sign In
-            </Link>
-
-            <button
-              onClick={scrollToRestaurants}
-              className="hidden sm:flex items-center gap-2 rounded-lg bg-[#01261f] px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-[#1a3c34]"
-            >
-              Find a Table
-              <Icon name="arrow_forward" className="h-[17px] w-[17px]" />
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setIsMobileMenuOpen((open) => !open)}
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-[#01261f] text-white xl:hidden"
-              aria-label="Open menu"
-            >
-              <Icon name={isMobileMenuOpen ? "close" : "menu"} className="h-5 w-5" />
-            </button>
-          </div>
-        </div>
-
-        {isMobileMenuOpen && (
-          <div className="border-t border-[#c1c8c4]/30 bg-[#fcf9f8] px-5 py-4 shadow-lg xl:hidden">
-            <div className="mx-auto flex max-w-[1440px] flex-col gap-2">
-              <button
-                onClick={() => {
-                  setIsMobileMenuOpen(false);
-                  scrollToRestaurants();
-                }}
-                className="rounded-lg px-3 py-3 text-left text-sm font-semibold"
-              >
-                Explore Venues
-              </button>
-
-              <Link
-                href="/login"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="rounded-lg px-3 py-3 text-sm font-semibold"
-              >
-                Sign In
-              </Link>
-            </div>
-          </div>
-        )}
-      </header>
-
-      <main className="pt-20">
+      <main>
         {/* =========================================================
             HERO
         ========================================================== */}
+
         <section className="relative flex min-h-[calc(100vh-5rem)] items-center overflow-hidden px-5 py-16 lg:px-16">
-          <div
-            className="absolute inset-0 scale-105 bg-cover bg-center"
-            style={{
-              backgroundImage: `url("${HERO_IMAGE}")`,
-            }}
-          />
+          {/* REAL RESTAURANT IMAGE */}
+
+          {heroRestaurantImage ? (
+            <img
+              src={heroRestaurantImage}
+              alt={
+                heroRestaurant
+                  ? `${heroRestaurant.name} restaurant`
+                  : "Restaurant"
+              }
+              className="absolute inset-0 h-full w-full scale-105 object-cover"
+              onError={(event) => {
+                event.currentTarget.style.display = "none";
+              }}
+            />
+          ) : (
+            <div className="absolute inset-0 bg-[#01261f]" />
+          )}
+
+          {/* IMAGE OVERLAY */}
 
           <div className="absolute inset-0 bg-[#01261f]/75" />
 
@@ -766,28 +855,46 @@ export default function HomePage() {
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_15%,rgba(1,38,31,.55)_100%)]" />
 
           <div className="relative mx-auto flex w-full max-w-7xl flex-col items-center gap-10 pt-6 lg:gap-14">
+            {/* LIVE STATUS */}
+
             <div className="flex flex-wrap justify-center gap-3">
               <div className="flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-wider text-white backdrop-blur-md">
                 <span className="relative flex h-2.5 w-2.5">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#c5eadf] opacity-75" />
+
                   <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[#c5eadf]" />
                 </span>
+
                 Addis Ababa Live Seating
-                <span className="text-white/50">•</span>
+
+                <span className="text-white/50">
+                  •
+                </span>
+
                 {availableRestaurantCount > 0
                   ? `${availableRestaurantCount} venues online`
                   : "Live venue network"}
               </div>
 
               <div className="hidden items-center gap-2 rounded-full bg-[#934a2d]/90 px-4 py-2 text-xs font-semibold text-white backdrop-blur-md sm:flex">
-                <Icon name="local_fire_department" className="h-4 w-4" />
+                <Icon
+                  name="local_fire_department"
+                  className="h-4 w-4"
+                />
+
                 Prime tables available tonight
               </div>
             </div>
 
+            {/* HERO TEXT */}
+
             <div className="flex max-w-4xl flex-col items-center gap-5 text-center">
               <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-[#ffe088] backdrop-blur-sm">
-                <Icon name="stars" className="h-4 w-4" />
+                <Icon
+                  name="stars"
+                  className="h-4 w-4"
+                />
+
                 The Premier Hospitality Network of Ethiopia
               </div>
 
@@ -799,20 +906,38 @@ export default function HomePage() {
               </h1>
 
               <p className="max-w-2xl text-base leading-8 text-white/80 sm:text-lg">
-                Discover Addis Ababa&apos;s finest dining destinations,
-                cultural experiences, skyline lounges, and intimate tables—all
-                from one seamless reservation platform.
+                Discover Addis Ababa&apos;s finest dining
+                destinations, cultural experiences, skyline
+                lounges, and intimate tables—all from one
+                seamless reservation platform.
               </p>
+
+              {/* SHOW WHICH REAL RESTAURANT PROVIDES HERO IMAGE */}
+
+              {heroRestaurant && heroRestaurantImage && (
+                <div className="rounded-full bg-black/25 px-4 py-2 text-xs font-medium text-white/80 backdrop-blur-md">
+                  Featured venue:{" "}
+                  <span className="font-bold text-white">
+                    {heroRestaurant.name}
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* RESERVATION BAR */}
+
             <div className="w-full max-w-5xl rounded-2xl bg-white/95 p-4 shadow-2xl backdrop-blur-xl lg:p-6">
               <form
                 onSubmit={handleFindTables}
                 className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-12"
               >
+                {/* NEIGHBORHOOD */}
+
                 <div className="flex items-center gap-3 rounded-xl bg-[#f6f3f2] p-3 lg:col-span-3">
-                  <Icon name="explore" className="text-[#934a2d]" />
+                  <Icon
+                    name="explore"
+                    className="text-[#934a2d]"
+                  />
 
                   <div className="min-w-0 flex-1">
                     <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-[#717976]">
@@ -822,21 +947,33 @@ export default function HomePage() {
                     <select
                       value={neighborhood}
                       onChange={(event) =>
-                        setNeighborhood(event.target.value)
+                        setNeighborhood(
+                          event.target.value
+                        )
                       }
                       className="w-full truncate bg-transparent text-sm font-semibold text-[#1c1b1b] outline-none"
                     >
-                      {neighborhoodOptions.map((option) => (
-                        <option key={option} value={option}>
-                          {option}
-                        </option>
-                      ))}
+                      {neighborhoodOptions.map(
+                        (option) => (
+                          <option
+                            key={option}
+                            value={option}
+                          >
+                            {option}
+                          </option>
+                        )
+                      )}
                     </select>
                   </div>
                 </div>
 
+                {/* DATE */}
+
                 <div className="flex items-center gap-3 rounded-xl bg-[#f6f3f2] p-3 lg:col-span-3">
-                  <Icon name="calendar_today" className="text-[#934a2d]" />
+                  <Icon
+                    name="calendar_today"
+                    className="text-[#934a2d]"
+                  />
 
                   <div className="min-w-0 flex-1">
                     <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-[#717976]">
@@ -848,15 +985,22 @@ export default function HomePage() {
                       min={getToday()}
                       value={reservationDate}
                       onChange={(event) =>
-                        setReservationDate(event.target.value)
+                        setReservationDate(
+                          event.target.value
+                        )
                       }
                       className="w-full bg-transparent text-sm font-semibold text-[#1c1b1b] outline-none"
                     />
                   </div>
                 </div>
 
+                {/* TIME */}
+
                 <div className="flex items-center gap-3 rounded-xl bg-[#f6f3f2] p-3 lg:col-span-3">
-                  <Icon name="schedule" className="text-[#934a2d]" />
+                  <Icon
+                    name="schedule"
+                    className="text-[#934a2d]"
+                  />
 
                   <div className="min-w-0 flex-1">
                     <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-[#717976]">
@@ -867,15 +1011,22 @@ export default function HomePage() {
                       type="time"
                       value={reservationTime}
                       onChange={(event) =>
-                        setReservationTime(event.target.value)
+                        setReservationTime(
+                          event.target.value
+                        )
                       }
                       className="w-full bg-transparent text-sm font-semibold text-[#1c1b1b] outline-none"
                     />
                   </div>
                 </div>
 
+                {/* GUESTS */}
+
                 <div className="flex items-center gap-3 rounded-xl bg-[#f6f3f2] p-3 lg:col-span-1">
-                  <Icon name="group" className="text-[#934a2d]" />
+                  <Icon
+                    name="group"
+                    className="text-[#934a2d]"
+                  />
 
                   <div className="min-w-0 flex-1">
                     <label className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-[#717976]">
@@ -885,20 +1036,28 @@ export default function HomePage() {
                     <select
                       value={partySize}
                       onChange={(event) =>
-                        setPartySize(Number(event.target.value))
+                        setPartySize(
+                          Number(event.target.value)
+                        )
                       }
                       className="w-full bg-transparent text-sm font-semibold outline-none"
                     >
-                      {Array.from({ length: 10 }, (_, index) => index + 1).map(
-                        (size) => (
-                          <option key={size} value={size}>
-                            {size}
-                          </option>
-                        )
-                      )}
+                      {Array.from(
+                        { length: 10 },
+                        (_, index) => index + 1
+                      ).map((size) => (
+                        <option
+                          key={size}
+                          value={size}
+                        >
+                          {size}
+                        </option>
+                      ))}
                     </select>
                   </div>
                 </div>
+
+                {/* FIND TABLE */}
 
                 <button
                   type="submit"
@@ -906,7 +1065,11 @@ export default function HomePage() {
                   className="flex min-h-[60px] items-center justify-center gap-2 rounded-xl bg-[#01261f] px-5 text-sm font-bold tracking-wide text-white shadow-md transition hover:bg-[#1a3c34] disabled:cursor-not-allowed disabled:opacity-60 lg:col-span-2"
                 >
                   <Icon
-                    name={availabilityLoading ? "progress_activity" : "search"}
+                    name={
+                      availabilityLoading
+                        ? "progress_activity"
+                        : "search"
+                    }
                     className="h-5 w-5"
                   />
 
@@ -916,11 +1079,15 @@ export default function HomePage() {
                 </button>
               </form>
 
+              {/* AVAILABILITY MESSAGE */}
+
               {availabilityMessage && (
                 <div className="mt-4 rounded-xl border border-[#934a2d]/20 bg-[#fff7f3] px-4 py-3 text-sm font-medium text-[#78351a]">
                   {availabilityMessage}
                 </div>
               )}
+
+              {/* QUICK FILTERS */}
 
               <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
                 <div className="flex flex-wrap items-center gap-2">
@@ -939,17 +1106,24 @@ export default function HomePage() {
                       key={label}
                       type="button"
                       onClick={() => {
-                        if (label === "Buna Rituals") {
+                        if (
+                          label === "Buna Rituals"
+                        ) {
                           setActiveFilter("buna");
                           scrollToRestaurants();
                         }
 
-                        if (label === "Skyline Terraces") {
+                        if (
+                          label ===
+                          "Skyline Terraces"
+                        ) {
                           setActiveFilter("skyline");
                           scrollToRestaurants();
                         }
 
-                        if (label === "Private Mesobs") {
+                        if (
+                          label === "Private Mesobs"
+                        ) {
                           setActiveFilter("mesob");
                           scrollToRestaurants();
                         }
@@ -961,23 +1135,35 @@ export default function HomePage() {
                       }}
                       className="flex items-center gap-1 rounded-full bg-[#f0edec] px-2.5 py-1.5 text-xs font-medium text-[#1c1b1b] transition hover:bg-[#01261f] hover:text-white"
                     >
-                      <Icon name={icon as IconName} className="h-3.5 w-3.5" />
+                      <Icon
+                        name={icon as IconName}
+                        className="h-3.5 w-3.5"
+                      />
+
                       {label}
                     </button>
                   ))}
                 </div>
 
                 <div className="flex items-center gap-2 text-xs font-semibold text-[#01261f]">
-                  <Icon name="verified" className="h-4 w-4 text-[#934a2d]" />
-                  Secure reservations • No fake payment confirmation
+                  <Icon
+                    name="verified"
+                    className="h-4 w-4 text-[#934a2d]"
+                  />
+
+                  Secure reservations • No fake payment
+                  confirmation
                 </div>
               </div>
             </div>
 
+            {/* BOOKING SUMMARY */}
+
             <div className="text-sm text-white/70">
               Booking for{" "}
               <span className="font-semibold text-white">
-                {partySize} guest{partySize === 1 ? "" : "s"}
+                {partySize} guest
+                {partySize === 1 ? "" : "s"}
               </span>{" "}
               on{" "}
               <span className="font-semibold text-white">
@@ -994,12 +1180,15 @@ export default function HomePage() {
         {/* =========================================================
             METRICS
         ========================================================== */}
+
         <section className="bg-[#f6f3f2] px-5 py-10 lg:px-16">
           <div className="mx-auto max-w-7xl">
             <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
               <div className="text-center">
                 <div className="font-serif text-4xl font-bold text-[#01261f]">
-                  {loadingRestaurants ? "…" : `${availableRestaurantCount}+`}
+                  {loadingRestaurants
+                    ? "…"
+                    : `${availableRestaurantCount}+`}
                 </div>
 
                 <div className="mt-1 text-sm font-medium text-[#717976]">
@@ -1026,7 +1215,11 @@ export default function HomePage() {
 
                 <div className="mt-1 flex items-center justify-center gap-1 text-sm font-medium text-[#717976]">
                   Average Rating
-                  <Icon name="grade" className="h-[17px] w-[17px] text-[#934a2d]" />
+
+                  <Icon
+                    name="grade"
+                    className="h-[17px] w-[17px] text-[#934a2d]"
+                  />
                 </div>
               </div>
 
@@ -1043,13 +1236,16 @@ export default function HomePage() {
 
             <div className="mt-10 border-t border-[#c1c8c4]/40 pt-8">
               <div className="text-center text-[11px] font-bold uppercase tracking-[0.2em] text-[#717976]">
-                Discover Addis Ababa&apos;s Dining Community
+                Discover Addis Ababa&apos;s Dining
+                Community
               </div>
 
               <div className="mt-5 flex flex-wrap items-center justify-center gap-8 text-lg font-bold text-[#414846]/70 grayscale">
                 <span>KATEGNA</span>
                 <span>YOD ABYSSINIA</span>
-                <span className="font-serif italic">CASTELLI</span>
+                <span className="font-serif italic">
+                  CASTELLI
+                </span>
                 <span>BOLE SKYLINE</span>
                 <span>GUSTO</span>
                 <span>BEN ABEBA</span>
@@ -1061,6 +1257,7 @@ export default function HomePage() {
         {/* =========================================================
             RESTAURANTS
         ========================================================== */}
+
         <section
           id="restaurants"
           className="bg-[#fcf9f8] px-5 py-16 lg:px-16 lg:py-24"
@@ -1069,7 +1266,11 @@ export default function HomePage() {
             <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
               <div className="max-w-xl">
                 <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-[#934a2d]">
-                  <Icon name="restaurant_menu" className="h-[18px] w-[18px]" />
+                  <Icon
+                    name="restaurant_menu"
+                    className="h-[18px] w-[18px]"
+                  />
+
                   Handpicked Culinary Destinations
                 </div>
 
@@ -1078,8 +1279,9 @@ export default function HomePage() {
                 </h2>
 
                 <p className="mt-3 text-base leading-7 text-[#717976]">
-                  Real restaurants from your Laravel backend, with live
-                  restaurant information and direct access to the reservation
+                  Real restaurants from your Laravel
+                  backend, with live restaurant information
+                  and direct access to the reservation
                   experience.
                 </p>
               </div>
@@ -1089,19 +1291,27 @@ export default function HomePage() {
                   <button
                     key={filter.id}
                     type="button"
-                    onClick={() => setActiveFilter(filter.id)}
+                    onClick={() =>
+                      setActiveFilter(filter.id)
+                    }
                     className={`flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold transition ${
                       activeFilter === filter.id
                         ? "bg-[#01261f] text-white shadow-sm"
                         : "bg-[#f0edec] text-[#1c1b1b] hover:bg-[#e5e2e1]"
                     }`}
                   >
-                    <Icon name={filter.icon as IconName} className="h-4 w-4" />
+                    <Icon
+                      name={filter.icon}
+                      className="h-4 w-4"
+                    />
+
                     {filter.label}
                   </button>
                 ))}
               </div>
             </div>
+
+            {/* ERROR */}
 
             {restaurantError && (
               <div className="rounded-2xl border border-red-200 bg-red-50 p-5 text-sm font-medium text-red-700">
@@ -1109,37 +1319,50 @@ export default function HomePage() {
               </div>
             )}
 
+            {/* LOADING */}
+
             {loadingRestaurants ? (
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-                {Array.from({ length: 4 }).map((_, index) => (
-                  <div
-                    key={index}
-                    className="overflow-hidden rounded-2xl bg-white shadow-sm"
-                  >
-                    <div className="h-56 animate-pulse bg-[#e5e2e1]" />
+                {Array.from({ length: 4 }).map(
+                  (_, index) => (
+                    <div
+                      key={index}
+                      className="overflow-hidden rounded-2xl bg-white shadow-sm"
+                    >
+                      <div className="h-56 animate-pulse bg-[#e5e2e1]" />
 
-                    <div className="space-y-3 p-5">
-                      <div className="h-5 w-3/4 animate-pulse rounded bg-[#e5e2e1]" />
-                      <div className="h-3 w-1/2 animate-pulse rounded bg-[#e5e2e1]" />
-                      <div className="h-12 animate-pulse rounded bg-[#e5e2e1]" />
+                      <div className="space-y-3 p-5">
+                        <div className="h-5 w-3/4 animate-pulse rounded bg-[#e5e2e1]" />
+
+                        <div className="h-3 w-1/2 animate-pulse rounded bg-[#e5e2e1]" />
+
+                        <div className="h-12 animate-pulse rounded bg-[#e5e2e1]" />
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                )}
               </div>
             ) : filteredRestaurants.length === 0 ? (
               <div className="rounded-2xl bg-[#f6f3f2] p-10 text-center">
-                <Icon name="restaurant" className="h-9 w-9 text-[#717976]" />
+                <Icon
+                  name="restaurant"
+                  className="h-9 w-9 text-[#717976]"
+                />
 
                 <h3 className="mt-3 font-serif text-2xl font-bold text-[#01261f]">
                   No restaurants match this filter
                 </h3>
 
                 <p className="mt-2 text-sm text-[#717976]">
-                  Try another experience or return to all venues.
+                  Try another experience or return to all
+                  venues.
                 </p>
 
                 <button
-                  onClick={() => setActiveFilter("all")}
+                  type="button"
+                  onClick={() =>
+                    setActiveFilter("all")
+                  }
                   className="mt-5 rounded-xl bg-[#01261f] px-5 py-3 text-sm font-bold text-white"
                 >
                   Show All Venues
@@ -1147,127 +1370,200 @@ export default function HomePage() {
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-                {filteredRestaurants.map((restaurant) => {
-                  const rating = Number(restaurant.rating ?? 0);
-                  const image = getRestaurantImage(restaurant);
-                  const category = getRestaurantCategory(restaurant);
+                {filteredRestaurants.map(
+                  (restaurant) => {
+                    const rating = Number(
+                      restaurant.rating ?? 0
+                    );
 
-                  return (
-                    <article
-                      key={restaurant.id}
-                      className="group flex flex-col overflow-hidden rounded-2xl bg-white shadow-md transition duration-300 hover:-translate-y-1 hover:shadow-xl"
-                    >
-                      <div className="relative h-56 overflow-hidden">
-                        <img
-                          src={image}
-                          alt={restaurant.name}
-                          className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                          onError={(event) => {
-                            event.currentTarget.src = FALLBACK_IMAGE;
-                          }}
-                        />
+                    const image =
+                      getRestaurantImage(
+                        restaurant
+                      );
 
-                        <div className="absolute left-3 top-3 rounded-full bg-[#01261f]/90 px-3 py-1 text-xs font-bold text-white backdrop-blur-md">
-                          {category}
-                        </div>
+                    const category =
+                      getRestaurantCategory(
+                        restaurant
+                      );
 
-                        <button
-                          type="button"
-                          aria-label={
-                            favorites.includes(restaurant.id)
-                              ? "Remove from favorites"
-                              : "Save restaurant"
-                          }
-                          onClick={() => toggleFavorite(restaurant.id)}
-                          className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-[#01261f] backdrop-blur-md transition hover:text-red-600"
-                        >
-                          <Icon
-                            name={favorites.includes(restaurant.id) ? "favorite" : "favorite_border"}
-                            className="h-[19px] w-[19px]"
-                          />
-                        </button>
+                    return (
+                      <article
+                        key={restaurant.id}
+                        className="group flex flex-col overflow-hidden rounded-2xl bg-white shadow-md transition duration-300 hover:-translate-y-1 hover:shadow-xl"
+                      >
+                        {/* RESTAURANT IMAGE */}
 
-                        <div className="absolute bottom-3 left-3 flex items-center gap-1 rounded-md bg-white/90 px-2.5 py-1 text-sm font-semibold text-[#1c1b1b] backdrop-blur-md">
-                          <Icon name="grade" className="h-4 w-4 text-[#934a2d]" />
+                        <div className="relative h-56 overflow-hidden bg-[#e5e2e1]">
+                          {image ? (
+                            <img
+                              src={image}
+                              alt={restaurant.name}
+                              className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                              onError={(
+                                event
+                              ) => {
+                                event.currentTarget.style.display =
+                                  "none";
+                              }}
+                            />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center bg-[#01261f]">
+                              <Icon
+                                name="restaurant"
+                                className="h-10 w-10 text-white/60"
+                              />
+                            </div>
+                          )}
 
-                          {rating > 0 ? rating.toFixed(1) : "New"}
-
-                          {restaurant.reviews_count ? (
-                            <span className="text-xs text-[#717976]">
-                              ({restaurant.reviews_count})
-                            </span>
-                          ) : null}
-                        </div>
-                      </div>
-
-                      <div className="flex flex-1 flex-col justify-between gap-5 p-5">
-                        <div>
-                          <h3 className="font-serif text-xl font-bold text-[#01261f]">
-                            {restaurant.name}
-                          </h3>
-
-                          <p className="mt-1 text-xs font-semibold text-[#934a2d]">
-                            {restaurant.address ||
-                              restaurant.city ||
-                              "Addis Ababa"}
-                            {restaurant.cuisine_type
-                              ? ` • ${restaurant.cuisine_type}`
-                              : ""}
-                          </p>
-
-                          <p className="mt-3 line-clamp-3 text-sm leading-6 text-[#717976]">
-                            {getRestaurantDescription(restaurant)}
-                          </p>
-                        </div>
-
-                        <div>
-                          <div className="mb-3 flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-[#717976]">
-                            <span>Reservation</span>
-
-                            {restaurant.opening_time &&
-                            restaurant.closing_time ? (
-                              <span className="text-[#43655c]">
-                                {restaurant.opening_time} –{" "}
-                                {restaurant.closing_time}
-                              </span>
-                            ) : (
-                              <span className="text-[#43655c]">
-                                Online booking
-                              </span>
-                            )}
+                          <div className="absolute left-3 top-3 rounded-full bg-[#01261f]/90 px-3 py-1 text-xs font-bold text-white backdrop-blur-md">
+                            {category}
                           </div>
 
-                          <div className="flex gap-2">
-                            <button
-                              type="button"
-                              onClick={() =>
-                                handleRestaurantBooking(restaurant)
+                          {/* FAVORITE */}
+
+                          <button
+                            type="button"
+                            aria-label={
+                              favorites.includes(
+                                restaurant.id
+                              )
+                                ? "Remove from favorites"
+                                : "Save restaurant"
+                            }
+                            onClick={() =>
+                              toggleFavorite(
+                                restaurant.id
+                              )
+                            }
+                            className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-[#01261f] backdrop-blur-md transition hover:text-red-600"
+                          >
+                            <Icon
+                              name={
+                                favorites.includes(
+                                  restaurant.id
+                                )
+                                  ? "favorite"
+                                  : "favorite_border"
                               }
-                              className="flex-1 rounded-xl bg-[#01261f] py-2.5 text-sm font-bold text-white transition hover:bg-[#1a3c34]"
-                            >
-                              Reserve Table
-                            </button>
+                              className="h-[19px] w-[19px]"
+                            />
+                          </button>
 
-                            <Link
-                              href={`/restaurants/${restaurant.id}`}
-                              className="flex items-center justify-center rounded-xl border border-[#c1c8c4] px-3 text-[#01261f] transition hover:bg-[#f6f3f2]"
-                              aria-label={`View ${restaurant.name}`}
-                            >
-                              <Icon name="arrow_forward" className="h-[18px] w-[18px]" />
-                            </Link>
+                          {/* RATING */}
+
+                          <div className="absolute bottom-3 left-3 flex items-center gap-1 rounded-md bg-white/90 px-2.5 py-1 text-sm font-semibold text-[#1c1b1b] backdrop-blur-md">
+                            <Icon
+                              name="grade"
+                              className="h-4 w-4 text-[#934a2d]"
+                            />
+
+                            {rating > 0
+                              ? rating.toFixed(1)
+                              : "New"}
+
+                            {restaurant.reviews_count ? (
+                              <span className="text-xs text-[#717976]">
+                                (
+                                {
+                                  restaurant.reviews_count
+                                }
+                                )
+                              </span>
+                            ) : null}
                           </div>
                         </div>
-                      </div>
-                    </article>
-                  );
-                })}
+
+                        {/* RESTAURANT CONTENT */}
+
+                        <div className="flex flex-1 flex-col justify-between gap-5 p-5">
+                          <div>
+                            <h3 className="font-serif text-xl font-bold text-[#01261f]">
+                              {restaurant.name}
+                            </h3>
+
+                            <p className="mt-1 text-xs font-semibold text-[#934a2d]">
+                              {restaurant.address ||
+                                restaurant.city ||
+                                "Addis Ababa"}
+
+                              {restaurant.cuisine_type
+                                ? ` • ${restaurant.cuisine_type}`
+                                : ""}
+                            </p>
+
+                            <p className="mt-3 line-clamp-3 text-sm leading-6 text-[#717976]">
+                              {getRestaurantDescription(
+                                restaurant
+                              )}
+                            </p>
+                          </div>
+
+                          <div>
+                            <div className="mb-3 flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-[#717976]">
+                              <span>
+                                Reservation
+                              </span>
+
+                              {restaurant.opening_time &&
+                              restaurant.closing_time ? (
+                                <span className="text-[#43655c]">
+                                  {
+                                    restaurant.opening_time
+                                  }{" "}
+                                  –{" "}
+                                  {
+                                    restaurant.closing_time
+                                  }
+                                </span>
+                              ) : (
+                                <span className="text-[#43655c]">
+                                  Online booking
+                                </span>
+                              )}
+                            </div>
+
+                            <div className="flex gap-2">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleRestaurantBooking(
+                                    restaurant
+                                  )
+                                }
+                                className="flex-1 rounded-xl bg-[#01261f] py-2.5 text-sm font-bold text-white transition hover:bg-[#1a3c34]"
+                              >
+                                Reserve Table
+                              </button>
+
+                              <Link
+                                href={`/restaurants/${restaurant.id}`}
+                                className="flex items-center justify-center rounded-xl border border-[#c1c8c4] px-3 text-[#01261f] transition hover:bg-[#f6f3f2]"
+                                aria-label={`View ${restaurant.name}`}
+                              >
+                                <Icon
+                                  name="arrow_forward"
+                                  className="h-[18px] w-[18px]"
+                                />
+                              </Link>
+                            </div>
+                          </div>
+                        </div>
+                      </article>
+                    );
+                  }
+                )}
               </div>
             )}
+
+            {/* ALL VENUES CTA */}
 
             <div className="flex flex-col items-center justify-between gap-5 rounded-2xl bg-[#f6f3f2] p-6 sm:flex-row">
               <div className="flex items-center gap-3">
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#01261f] text-white">
-                  <Icon name="map" className="h-6 w-6" />
+                  <Icon
+                    name="map"
+                    className="h-6 w-6"
+                  />
                 </div>
 
                 <div>
@@ -1276,12 +1572,14 @@ export default function HomePage() {
                   </h4>
 
                   <p className="text-sm text-[#717976]">
-                    Explore real restaurant availability across Addis Ababa.
+                    Explore real restaurant availability
+                    across Addis Ababa.
                   </p>
                 </div>
               </div>
 
               <button
+                type="button"
                 onClick={() => {
                   setActiveFilter("all");
                   scrollToRestaurants();
@@ -1297,6 +1595,7 @@ export default function HomePage() {
         {/* =========================================================
             TECHNOLOGY
         ========================================================== */}
+
         <section
           id="technology"
           className="bg-[#f6f3f2] px-5 py-20 lg:px-16"
@@ -1312,18 +1611,22 @@ export default function HomePage() {
               </h2>
 
               <p className="mt-3 text-base leading-7 text-[#717976]">
-                A modern reservation experience built around Ethiopian
-                hospitality, precise table selection, and your existing
-                restaurant backend.
+                A modern reservation experience built around
+                Ethiopian hospitality, precise table selection,
+                and your existing restaurant backend.
               </p>
             </div>
 
             <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
               {/* FLOORPLAN */}
+
               <div className="flex flex-col justify-between gap-6 rounded-2xl bg-white p-8 shadow-sm transition hover:shadow-md">
                 <div>
                   <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#f0edec] text-[#01261f]">
-                    <Icon name="grid_view" className="h-[26px] w-[26px]" />
+                    <Icon
+                      name="grid_view"
+                      className="h-[26px] w-[26px]"
+                    />
                   </div>
 
                   <h3 className="mt-4 font-serif text-2xl font-bold text-[#01261f]">
@@ -1331,8 +1634,9 @@ export default function HomePage() {
                   </h3>
 
                   <p className="mt-3 text-sm leading-6 text-[#717976]">
-                    Give diners the ability to inspect seating options before
-                    they enter the reservation journey.
+                    Give diners the ability to inspect seating
+                    options before they enter the reservation
+                    journey.
                   </p>
                 </div>
 
@@ -1346,13 +1650,17 @@ export default function HomePage() {
               </div>
 
               {/* AI */}
+
               <div
                 id="concierge"
                 className="flex flex-col justify-between gap-6 rounded-2xl bg-white p-8 shadow-sm transition hover:shadow-md"
               >
                 <div>
                   <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#f0edec] text-[#01261f]">
-                    <Icon name="smart_toy" className="h-[26px] w-[26px]" />
+                    <Icon
+                      name="smart_toy"
+                      className="h-[26px] w-[26px]"
+                    />
                   </div>
 
                   <h3 className="mt-4 font-serif text-2xl font-bold text-[#01261f]">
@@ -1360,9 +1668,9 @@ export default function HomePage() {
                   </h3>
 
                   <p className="mt-3 text-sm leading-6 text-[#717976]">
-                    Help diners discover restaurants based on cuisine,
-                    atmosphere, fasting preferences, location, occasion, and
-                    available tables.
+                    Help diners discover restaurants based on
+                    cuisine, atmosphere, fasting preferences,
+                    location, occasion, and available tables.
                   </p>
                 </div>
 
@@ -1373,8 +1681,8 @@ export default function HomePage() {
                     </div>
 
                     <div className="rounded-xl bg-white p-3 text-xs leading-5 shadow-sm">
-                      Quiet romantic dinner in Bole with Ye&apos;tsom-friendly
-                      options?
+                      Quiet romantic dinner in Bole with
+                      Ye&apos;tsom-friendly options?
                     </div>
                   </div>
 
@@ -1384,18 +1692,23 @@ export default function HomePage() {
                     </div>
 
                     <div className="rounded-xl bg-[#01261f] p-3 text-xs leading-5 text-white shadow-sm">
-                      I&apos;ll help you find a matching restaurant and check
-                      its real availability.
+                      I&apos;ll help you find a matching
+                      restaurant and check its real
+                      availability.
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* PAYMENT */}
+
               <div className="flex flex-col justify-between gap-6 rounded-2xl bg-white p-8 shadow-sm transition hover:shadow-md">
                 <div>
                   <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#f0edec] text-[#01261f]">
-                    <Icon name="contactless" className="h-[26px] w-[26px]" />
+                    <Icon
+                      name="contactless"
+                      className="h-[26px] w-[26px]"
+                    />
                   </div>
 
                   <h3 className="mt-4 font-serif text-2xl font-bold text-[#01261f]">
@@ -1403,8 +1716,9 @@ export default function HomePage() {
                   </h3>
 
                   <p className="mt-3 text-sm leading-6 text-[#717976]">
-                    The reservation journey is designed for Telebirr, CBE
-                    Birr, and other Ethiopian payment providers.
+                    The reservation journey is designed for
+                    Telebirr, CBE Birr, and other Ethiopian
+                    payment providers.
                   </p>
                 </div>
 
@@ -1414,7 +1728,10 @@ export default function HomePage() {
                       DINEET RESERVATION
                     </span>
 
-                    <Icon name="qr_code_2" className="text-[#ffe088]" />
+                    <Icon
+                      name="qr_code_2"
+                      className="text-[#ffe088]"
+                    />
                   </div>
 
                   <div className="mt-4 grid grid-cols-2 gap-3 text-xs">
@@ -1422,14 +1739,20 @@ export default function HomePage() {
                       <span className="block text-[10px] uppercase text-white/50">
                         Status
                       </span>
-                      <span className="font-bold">Reservation Ready</span>
+
+                      <span className="font-bold">
+                        Reservation Ready
+                      </span>
                     </div>
 
                     <div>
                       <span className="block text-[10px] uppercase text-white/50">
                         Payment
                       </span>
-                      <span className="font-bold">Gateway Ready</span>
+
+                      <span className="font-bold">
+                        Gateway Ready
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -1439,8 +1762,9 @@ export default function HomePage() {
         </section>
 
         {/* =========================================================
-            OPERATOR SECTION
+            OPERATORS
         ========================================================== */}
+
         <section
           id="operators"
           className="relative overflow-hidden bg-[#01261f] px-5 py-20 text-white lg:px-16"
@@ -1452,7 +1776,11 @@ export default function HomePage() {
           <div className="relative z-10 mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 lg:grid-cols-2">
             <div>
               <div className="inline-flex items-center gap-2 rounded-full bg-[#1a3c34] px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-[#c5eadf]">
-                <Icon name="domain" className="h-4 w-4" />
+                <Icon
+                  name="domain"
+                  className="h-4 w-4"
+                />
+
                 DINEET for Restaurant Operators
               </div>
 
@@ -1464,9 +1792,9 @@ export default function HomePage() {
               </h2>
 
               <p className="mt-5 text-lg leading-8 text-white/75">
-                Give your restaurant team better visibility into reservations,
-                tables, guest details, special requests, and the dining
-                experience.
+                Give your restaurant team better visibility
+                into reservations, tables, guest details,
+                special requests, and the dining experience.
               </p>
 
               <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2">
@@ -1474,16 +1802,28 @@ export default function HomePage() {
                   ["check_circle", "Real Reservation Data"],
                   ["check_circle", "Guest Management"],
                   ["check_circle", "Table Visibility"],
-                  ["check_circle", "Reservation Status Tracking"],
+                  [
+                    "check_circle",
+                    "Reservation Status Tracking",
+                  ],
                 ].map(([icon, title]) => (
-                  <div key={title} className="flex items-start gap-3">
-                    <Icon name={icon as IconName} className="mt-0.5 h-5 w-5 text-[#ffe088]" />
+                  <div
+                    key={title}
+                    className="flex items-start gap-3"
+                  >
+                    <Icon
+                      name={icon as IconName}
+                      className="mt-0.5 h-5 w-5 text-[#ffe088]"
+                    />
 
                     <div>
-                      <h4 className="text-sm font-bold">{title}</h4>
+                      <h4 className="text-sm font-bold">
+                        {title}
+                      </h4>
 
                       <p className="mt-1 text-xs leading-5 text-white/60">
-                        Connected to the restaurant management workflow.
+                        Connected to the restaurant
+                        management workflow.
                       </p>
                     </div>
                   </div>
@@ -1496,7 +1836,11 @@ export default function HomePage() {
                   className="flex items-center gap-2 rounded-xl bg-[#934a2d] px-6 py-3.5 text-sm font-bold text-white transition hover:bg-[#ffa17e] hover:text-[#4e1c0b]"
                 >
                   Partner With DINEET
-                  <Icon name="arrow_forward" className="h-[18px] w-[18px]" />
+
+                  <Icon
+                    name="arrow_forward"
+                    className="h-[18px] w-[18px]"
+                  />
                 </Link>
 
                 <Link
@@ -1509,6 +1853,7 @@ export default function HomePage() {
             </div>
 
             {/* HOST TERMINAL */}
+
             <div className="rounded-2xl bg-[#1a3c34]/90 p-5 shadow-2xl backdrop-blur-md">
               <div className="flex items-center justify-between border-b border-white/10 pb-4">
                 <div className="flex items-center gap-3">
@@ -1535,19 +1880,22 @@ export default function HomePage() {
                   {
                     table: "T14",
                     guest: "Reservation #14",
-                    detail: "4 Guests • Ye'tsom Request",
+                    detail:
+                      "4 Guests • Ye'tsom Request",
                     status: "Confirmed",
                   },
                   {
                     table: "T06",
                     guest: "Reservation #06",
-                    detail: "2 Guests • Window Seating",
+                    detail:
+                      "2 Guests • Window Seating",
                     status: "Arriving",
                   },
                   {
                     table: "T19",
                     guest: "Reservation #19",
-                    detail: "6 Guests • Birthday",
+                    detail:
+                      "6 Guests • Birthday",
                     status: "Pending",
                   },
                 ].map((item) => (
@@ -1583,20 +1931,27 @@ export default function HomePage() {
                   <span className="block text-[10px] text-white/50">
                     Tables
                   </span>
-                  <span className="text-sm font-bold">Live</span>
+
+                  <span className="text-sm font-bold">
+                    Live
+                  </span>
                 </div>
 
                 <div className="rounded-lg bg-[#01261f]/70 p-2.5">
                   <span className="block text-[10px] text-white/50">
                     Reservations
                   </span>
-                  <span className="text-sm font-bold">Synced</span>
+
+                  <span className="text-sm font-bold">
+                    Synced
+                  </span>
                 </div>
 
                 <div className="rounded-lg bg-[#01261f]/70 p-2.5">
                   <span className="block text-[10px] text-white/50">
                     Status
                   </span>
+
                   <span className="text-sm font-bold text-[#c5eadf]">
                     Online
                   </span>
@@ -1609,6 +1964,7 @@ export default function HomePage() {
         {/* =========================================================
             DINING PASSPORT
         ========================================================== */}
+
         <section
           id="passport"
           className="bg-[#fcf9f8] px-5 py-16 lg:px-16 lg:py-24"
@@ -1616,7 +1972,11 @@ export default function HomePage() {
           <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-12 md:flex-row">
             <div className="md:w-1/2">
               <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-[#934a2d]">
-                <Icon name="badge" className="h-5 w-5" />
+                <Icon
+                  name="badge"
+                  className="h-5 w-5"
+                />
+
                 The Mesob Dining Passport
               </div>
 
@@ -1625,8 +1985,9 @@ export default function HomePage() {
               </h2>
 
               <p className="mt-4 text-base leading-7 text-[#717976]">
-                Build your DINEET dining history as you explore restaurants
-                across Addis Ababa and discover new hospitality experiences.
+                Build your DINEET dining history as you
+                explore restaurants across Addis Ababa and
+                discover new hospitality experiences.
               </p>
 
               <div className="mt-6 flex flex-col gap-3">
@@ -1635,7 +1996,10 @@ export default function HomePage() {
                   "Discover restaurants across Addis Ababa",
                   "Build your dining history and unlock future benefits",
                 ].map((text, index) => (
-                  <div key={text} className="flex items-center gap-3">
+                  <div
+                    key={text}
+                    className="flex items-center gap-3"
+                  >
                     <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#ffdbcf] text-xs font-bold text-[#380d00]">
                       {index + 1}
                     </span>
@@ -1648,11 +2012,16 @@ export default function HomePage() {
               </div>
 
               <button
+                type="button"
                 onClick={scrollToRestaurants}
                 className="mt-7 inline-flex items-center gap-2 rounded-xl bg-[#01261f] px-6 py-3 text-sm font-bold text-white transition hover:bg-[#1a3c34]"
               >
                 Start Exploring
-                <Icon name="arrow_forward" className="h-[18px] w-[18px]" />
+
+                <Icon
+                  name="arrow_forward"
+                  className="h-[18px] w-[18px]"
+                />
               </button>
             </div>
 
@@ -1668,17 +2037,28 @@ export default function HomePage() {
                   </span>
                 </div>
 
-                <Icon name="workspace_premium" className="h-[26px] w-[26px] text-[#934a2d]" />
+                <Icon
+                  name="workspace_premium"
+                  className="h-[26px] w-[26px] text-[#934a2d]"
+                />
               </div>
 
               <div className="mt-6 grid grid-cols-3 gap-3">
-                {["Bole", "Piazza", "Kazanchis"].map((area, index) => (
+                {[
+                  "Bole",
+                  "Piazza",
+                  "Kazanchis",
+                ].map((area, index) => (
                   <div
                     key={area}
                     className="flex h-24 flex-col items-center justify-center rounded-2xl bg-white p-2 text-center shadow-sm"
                   >
                     <Icon
-                      name={index === 2 ? "local_fire_department" : "verified"}
+                      name={
+                        index === 2
+                          ? "local_fire_department"
+                          : "verified"
+                      }
                       className="h-6 w-6 text-[#01261f]"
                     />
 
@@ -1699,19 +2079,23 @@ export default function HomePage() {
                     Dining progress
                   </span>
 
-                  <span className="font-bold text-[#934a2d]">3 / 5</span>
+                  <span className="font-bold text-[#934a2d]">
+                    3 / 5
+                  </span>
                 </div>
 
                 <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-[#e5e2e1]">
                   <div
                     className="h-full rounded-full bg-[#934a2d]"
-                    style={{ width: "60%" }}
+                    style={{
+                      width: "60%",
+                    }}
                   />
                 </div>
 
                 <p className="mt-2 text-[11px] text-[#717976]">
-                  Keep exploring Addis dining destinations to build your
-                  passport.
+                  Keep exploring Addis dining destinations
+                  to build your passport.
                 </p>
               </div>
             </div>
@@ -1721,10 +2105,15 @@ export default function HomePage() {
         {/* =========================================================
             FINAL CTA
         ========================================================== */}
+
         <section className="bg-[#f6f3f2] px-5 py-20 text-center lg:px-16">
           <div className="mx-auto flex max-w-4xl flex-col items-center gap-6">
             <div className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-[#934a2d] shadow-sm">
-              <Icon name="table_bar" className="h-[18px] w-[18px]" />
+              <Icon
+                name="table_bar"
+                className="h-[18px] w-[18px]"
+              />
+
               Instant Reservation Access
             </div>
 
@@ -1733,46 +2122,70 @@ export default function HomePage() {
             </h2>
 
             <p className="max-w-xl text-lg leading-8 text-[#717976]">
-              Explore real restaurants, choose your preferred date and time,
-              select your table, and move through the DINEET reservation
-              experience.
+              Explore real restaurants, choose your preferred
+              date and time, select your table, and move
+              through the DINEET reservation experience.
             </p>
 
             <div className="flex flex-wrap justify-center gap-4 pt-3">
               <button
+                type="button"
                 onClick={scrollToRestaurants}
                 className="flex items-center gap-2 rounded-xl bg-[#01261f] px-8 py-4 text-sm font-bold text-white shadow-lg transition hover:scale-105 hover:bg-[#1a3c34]"
               >
                 Reserve a Table
-                <Icon name="arrow_forward" className="h-5 w-5" />
+
+                <Icon
+                  name="arrow_forward"
+                  className="h-5 w-5"
+                />
               </button>
 
               <button
+                type="button"
                 onClick={() =>
                   document
                     .getElementById("concierge")
-                    ?.scrollIntoView({ behavior: "smooth" })
+                    ?.scrollIntoView({
+                      behavior: "smooth",
+                    })
                 }
                 className="flex items-center gap-2 rounded-xl bg-white px-8 py-4 text-sm font-semibold text-[#01261f] shadow-sm transition hover:bg-[#fcf9f8]"
               >
-                <Icon name="chat" className="h-5 w-5 text-[#934a2d]" />
+                <Icon
+                  name="chat"
+                  className="h-5 w-5 text-[#934a2d]"
+                />
+
                 Ask DINEET
               </button>
             </div>
 
             <div className="flex flex-wrap justify-center gap-6 pt-5 text-xs font-medium text-[#717976]">
               <span className="flex items-center gap-1.5">
-                <Icon name="bolt" className="h-[18px] w-[18px] text-[#01261f]" />
+                <Icon
+                  name="bolt"
+                  className="h-[18px] w-[18px] text-[#01261f]"
+                />
+
                 Real-time availability
               </span>
 
               <span className="flex items-center gap-1.5">
-                <Icon name="table_restaurant" className="h-[18px] w-[18px] text-[#01261f]" />
+                <Icon
+                  name="table_restaurant"
+                  className="h-[18px] w-[18px] text-[#01261f]"
+                />
+
                 Table selection
               </span>
 
               <span className="flex items-center gap-1.5">
-                <Icon name="lock" className="h-[18px] w-[18px] text-[#01261f]" />
+                <Icon
+                  name="lock"
+                  className="h-[18px] w-[18px] text-[#01261f]"
+                />
+
                 Secure reservation flow
               </span>
             </div>
@@ -1781,147 +2194,9 @@ export default function HomePage() {
       </main>
 
       {/* =========================================================
-          FOOTER
-      ========================================================== */}
-      <footer className="bg-[#f0edec] px-5 py-12 lg:px-16">
-        <div className="mx-auto max-w-7xl">
-          <div className="grid grid-cols-1 gap-10 pb-10 md:grid-cols-2 lg:grid-cols-5">
-            <div className="lg:col-span-2">
-              <div className="flex items-center gap-2">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#01261f] text-[#ffe088]">
-                  <Icon name="table_restaurant" className="h-5 w-5" />
-                </div>
-
-                <span className="font-serif text-2xl font-bold text-[#01261f]">
-                  DINEET
-                </span>
-              </div>
-
-              <p className="mt-4 font-serif text-xl italic text-[#01261f]">
-                Ethiopian Hospitality Reimagined
-              </p>
-
-              <p className="mt-3 max-w-md text-sm leading-6 text-[#717976]">
-                A modern dining reservation platform connecting guests with
-                restaurants across Addis Ababa.
-              </p>
-
-              <div className="mt-5 flex items-center gap-2 text-xs text-[#717976]">
-                <span>Payment-ready:</span>
-
-                <span className="rounded bg-[#e5e2e1] px-2 py-1 font-semibold text-[#1c1b1b]">
-                  Telebirr
-                </span>
-
-                <span className="rounded bg-[#e5e2e1] px-2 py-1 font-semibold text-[#1c1b1b]">
-                  CBE Birr
-                </span>
-              </div>
-            </div>
-
-            <div>
-              <h4 className="text-xs font-bold uppercase tracking-wider text-[#01261f]">
-                For Diners
-              </h4>
-
-              <div className="mt-4 flex flex-col gap-3 text-sm text-[#717976]">
-                <button onClick={scrollToRestaurants} className="text-left hover:text-[#01261f]">
-                  Explore Venues
-                </button>
-
-                <button
-                  onClick={() =>
-                    document
-                      .getElementById("technology")
-                      ?.scrollIntoView({ behavior: "smooth" })
-                  }
-                  className="text-left hover:text-[#01261f]"
-                >
-                  Dining Experiences
-                </button>
-
-                <button
-                  onClick={() =>
-                    document
-                      .getElementById("passport")
-                      ?.scrollIntoView({ behavior: "smooth" })
-                  }
-                  className="text-left hover:text-[#01261f]"
-                >
-                  Dining Passport
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <h4 className="text-xs font-bold uppercase tracking-wider text-[#01261f]">
-                For Operators
-              </h4>
-
-              <div className="mt-4 flex flex-col gap-3 text-sm text-[#717976]">
-                <button
-                  onClick={() =>
-                    document
-                      .getElementById("operators")
-                      ?.scrollIntoView({ behavior: "smooth" })
-                  }
-                  className="text-left hover:text-[#01261f]"
-                >
-                  Restaurant Suite
-                </button>
-
-                <Link href="/login" className="hover:text-[#01261f]">
-                  Operator Portal
-                </Link>
-
-                <button
-                  onClick={() => setModalOpen(true)}
-                  className="text-left hover:text-[#01261f]"
-                >
-                  Floorplan & Tables
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <h4 className="text-xs font-bold uppercase tracking-wider text-[#01261f]">
-                Account
-              </h4>
-
-              <div className="mt-4 flex flex-col gap-3 text-sm text-[#717976]">
-                <Link href="/login" className="hover:text-[#01261f]">
-                  Sign In
-                </Link>
-
-                <Link href="/register" className="hover:text-[#01261f]">
-                  Create Account
-                </Link>
-
-                <Link href="/reservations" className="hover:text-[#01261f]">
-                  My Reservations
-                </Link>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex flex-col items-center justify-between gap-4 border-t border-[#c1c8c4]/40 pt-6 text-xs text-[#717976] md:flex-row">
-            <p>© 2026 DINEET Hospitality Technologies.</p>
-
-            <div className="flex items-center gap-5">
-              <span className="flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-[#01261f]" />
-                System Operational
-              </span>
-
-              <span>Addis Ababa, Ethiopia</span>
-            </div>
-          </div>
-        </div>
-      </footer>
-
-      {/* =========================================================
           FLOORPLAN MODAL
       ========================================================== */}
+
       {modalOpen && (
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center bg-[#01261f]/75 p-3 backdrop-blur-md sm:p-6 md:p-10"
@@ -1929,17 +2204,20 @@ export default function HomePage() {
           aria-modal="true"
           aria-labelledby="floorplan-title"
           onMouseDown={(event) => {
-            if (event.target === event.currentTarget) {
+            if (
+              event.target === event.currentTarget
+            ) {
               setModalOpen(false);
             }
           }}
         >
           <div className="relative flex max-h-[92vh] w-full max-w-6xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl md:rounded-3xl">
             {/* MODAL HEADER */}
+
             <div className="flex flex-col gap-4 border-b border-[#c1c8c4]/30 bg-[#f6f3f2] p-4 sm:p-6 lg:flex-row lg:items-center lg:justify-between">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#01261f] text-white">
-                  <Icon name="view_in_ar" className="" />
+                  <Icon name="view_in_ar" />
                 </div>
 
                 <div>
@@ -1957,7 +2235,8 @@ export default function HomePage() {
                   </div>
 
                   <p className="mt-1 text-xs text-[#717976]">
-                    Choose a seating style and continue into your reservation.
+                    Choose a seating style and continue
+                    into your reservation.
                   </p>
                 </div>
               </div>
@@ -1968,12 +2247,13 @@ export default function HomePage() {
                 className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-white text-[#414846] shadow-sm transition hover:text-[#01261f] lg:static"
                 aria-label="Close floorplan"
               >
-                <Icon name="close" className="" />
+                <Icon name="close" />
               </button>
             </div>
 
             <div className="grid min-h-0 flex-1 grid-cols-1 overflow-y-auto lg:grid-cols-12 lg:overflow-hidden">
               {/* FLOORPLAN */}
+
               <div className="border-b border-[#c1c8c4]/30 bg-[#fcf9f8] p-4 sm:p-6 lg:col-span-7 lg:border-b-0 lg:border-r">
                 <div className="flex gap-2 overflow-x-auto pb-3">
                   {[
@@ -1987,7 +2267,11 @@ export default function HomePage() {
                       type="button"
                       onClick={() =>
                         setTableFilter(
-                          id as "all" | "booth" | "mesob" | "terrace"
+                          id as
+                            | "all"
+                            | "booth"
+                            | "mesob"
+                            | "terrace"
                         )
                       }
                       className={`shrink-0 rounded-lg px-3 py-2 text-xs font-bold transition ${
@@ -2004,7 +2288,11 @@ export default function HomePage() {
                 <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-[#c1c8c4]/30 bg-[#f0edec] p-4 shadow-inner sm:aspect-[16/10] sm:p-6">
                   <div className="flex items-center justify-between rounded-lg bg-white/80 px-3 py-2 text-[10px] text-[#414846] backdrop-blur">
                     <div className="flex items-center gap-1.5 font-semibold text-[#01261f]">
-                      <Icon name="panorama" className="h-[15px] w-[15px] text-[#934a2d]" />
+                      <Icon
+                        name="panorama"
+                        className="h-[15px] w-[15px] text-[#934a2d]"
+                      />
+
                       Window & Skyline Seating
                     </div>
 
@@ -2014,92 +2302,106 @@ export default function HomePage() {
                   </div>
 
                   <div className="mt-3 grid h-[calc(100%-3rem)] grid-cols-6 grid-rows-4 gap-2 sm:gap-3">
-                    {visibleFloorTables.map((table) => {
-                      const selected = selectedTableId === table.id;
+                    {visibleFloorTables.map(
+                      (table) => {
+                        const selected =
+                          selectedTableId === table.id;
 
-                      const isUnavailable =
-                        table.status === "occupied" ||
-                        table.status === "reserved";
+                        const isUnavailable =
+                          table.status ===
+                            "occupied" ||
+                          table.status ===
+                            "reserved";
 
-                      return (
-                        <button
-                          key={table.id}
-                          type="button"
-                          disabled={isUnavailable}
-                          onClick={() => {
-                            setSelectedTableId(table.id);
-                          }}
-                          className={[
-                            table.type === "booth"
-                              ? "col-span-2 row-span-2"
-                              : table.type === "mesob"
-                                ? "col-span-2 row-span-2"
-                                : "col-span-2 row-span-2",
-                            "rounded-2xl p-3 text-left transition",
-                            selected
-                              ? "bg-[#01261f] text-white ring-4 ring-[#ffe088] shadow-xl"
-                              : table.status === "available"
-                                ? "bg-white text-[#01261f] border-2 border-[#43655c] hover:scale-[1.02]"
-                                : table.status === "reserved"
-                                  ? "bg-[#ffdbcf] text-[#380d00]"
-                                  : "bg-[#e5e2e1] text-[#717976] opacity-70",
-                          ].join(" ")}
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs font-bold">
-                              Table {table.number}
-                            </span>
-
-                            <span
-                              className={`rounded-full px-2 py-0.5 text-[9px] font-bold uppercase ${
-                                selected
-                                  ? "bg-[#c5eadf] text-[#00201a]"
-                                  : table.status === "available"
-                                    ? "bg-[#c5eadf] text-[#00201a]"
-                                    : table.status === "reserved"
-                                      ? "bg-[#934a2d] text-white"
-                                      : "bg-[#dcd9d9] text-[#717976]"
-                              }`}
-                            >
-                              {selected ? "Selected" : table.status}
-                            </span>
-                          </div>
-
-                          <div className="my-3">
-                            <div
-                              className={`font-serif text-sm font-bold ${
-                                selected ? "text-[#ffe088]" : ""
-                              }`}
-                            >
-                              {table.title}
-                            </div>
-
-                            <div
-                              className={`mt-1 text-[10px] ${
-                                selected
-                                  ? "text-white/70"
-                                  : "text-[#717976]"
-                              }`}
-                            >
-                              {table.capacity}
-                            </div>
-                          </div>
-
-                          <div
-                            className={`border-t pt-2 text-[9px] ${
+                        return (
+                          <button
+                            key={table.id}
+                            type="button"
+                            disabled={isUnavailable}
+                            onClick={() =>
+                              setSelectedTableId(
+                                table.id
+                              )
+                            }
+                            className={[
+                              "col-span-2 row-span-2 rounded-2xl p-3 text-left transition",
                               selected
-                                ? "border-white/20 text-[#c5eadf]"
-                                : "border-[#c1c8c4]/40 text-[#717976]"
-                            }`}
+                                ? "bg-[#01261f] text-white ring-4 ring-[#ffe088] shadow-xl"
+                                : table.status ===
+                                    "available"
+                                  ? "border-2 border-[#43655c] bg-white text-[#01261f] hover:scale-[1.02]"
+                                  : table.status ===
+                                      "reserved"
+                                    ? "bg-[#ffdbcf] text-[#380d00]"
+                                    : "bg-[#e5e2e1] text-[#717976] opacity-70",
+                            ].join(" ")}
                           >
-                            {table.seating}
-                          </div>
-                        </button>
-                      );
-                    })}
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-bold">
+                                Table{" "}
+                                {table.number}
+                              </span>
+
+                              <span
+                                className={`rounded-full px-2 py-0.5 text-[9px] font-bold uppercase ${
+                                  selected
+                                    ? "bg-[#c5eadf] text-[#00201a]"
+                                    : table.status ===
+                                        "available"
+                                      ? "bg-[#c5eadf] text-[#00201a]"
+                                      : table.status ===
+                                          "reserved"
+                                        ? "bg-[#934a2d] text-white"
+                                        : "bg-[#dcd9d9] text-[#717976]"
+                                }`}
+                              >
+                                {selected
+                                  ? "Selected"
+                                  : table.status}
+                              </span>
+                            </div>
+
+                            <div className="my-3">
+                              <div
+                                className={`font-serif text-sm font-bold ${
+                                  selected
+                                    ? "text-[#ffe088]"
+                                    : ""
+                                }`}
+                              >
+                                {table.title}
+                              </div>
+
+                              <div
+                                className={`mt-1 text-[10px] ${
+                                  selected
+                                    ? "text-white/70"
+                                    : "text-[#717976]"
+                                }`}
+                              >
+                                {table.capacity}
+                              </div>
+                            </div>
+
+                            <div
+                              className={`border-t pt-2 text-[9px] ${
+                                selected
+                                  ? "border-white/20 text-[#c5eadf]"
+                                  : "border-[#c1c8c4]/40 text-[#717976]"
+                              }`}
+                            >
+                              {table.seating}
+                            </div>
+                          </button>
+                        );
+                      }
+                    )}
 
                     <div className="col-span-2 row-span-2 flex flex-col items-center justify-center rounded-2xl border border-[#cba72f]/40 bg-[#cba72f]/10 p-2 text-center">
-                      <Icon name="local_cafe" className="h-6 w-6 animate-pulse  text-[#735c00]" />
+                      <Icon
+                        name="local_cafe"
+                        className="h-6 w-6 animate-pulse text-[#735c00]"
+                      />
 
                       <span className="mt-1 font-serif text-xs font-bold text-[#4e3d00]">
                         Heritage Buna
@@ -2136,27 +2438,45 @@ export default function HomePage() {
               </div>
 
               {/* TABLE DETAILS */}
+
               <div className="flex flex-col justify-between gap-6 bg-white p-4 sm:p-6 lg:col-span-5">
                 <div>
-                  <div className="relative h-44 overflow-hidden rounded-2xl">
-                    <img
-                      src={HERO_IMAGE}
-                      alt="Restaurant dining interior"
-                      className="h-full w-full object-cover"
-                    />
+                  {/* REAL RESTAURANT IMAGE IN MODAL */}
+
+                  <div className="relative h-44 overflow-hidden rounded-2xl bg-[#01261f]">
+                    {heroRestaurantImage ? (
+                      <img
+                        src={heroRestaurantImage}
+                        alt={
+                          heroRestaurant
+                            ? heroRestaurant.name
+                            : "Restaurant dining interior"
+                        }
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center">
+                        <Icon
+                          name="restaurant"
+                          className="h-10 w-10 text-white/50"
+                        />
+                      </div>
+                    )}
 
                     <div className="absolute inset-0 bg-gradient-to-t from-[#01261f]/80 to-transparent" />
 
                     <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between text-white">
                       <div>
                         <div className="text-xs font-semibold text-[#ffe088]">
-                          {selectedTable.status === "available"
+                          {selectedTable.status ===
+                          "available"
                             ? "Available Seating"
                             : selectedTable.status}
                         </div>
 
                         <h3 className="font-serif text-xl font-bold">
-                          Table {selectedTable.number}
+                          Table{" "}
+                          {selectedTable.number}
                         </h3>
                       </div>
 
@@ -2217,6 +2537,8 @@ export default function HomePage() {
                   </div>
                 </div>
 
+                {/* DEPOSIT */}
+
                 <div className="border-t border-[#c1c8c4]/30 pt-5">
                   <div className="flex items-end justify-between">
                     <div>
@@ -2225,7 +2547,8 @@ export default function HomePage() {
                       </span>
 
                       <span className="font-serif text-2xl font-bold text-[#01261f]">
-                        {selectedTable.deposit.toLocaleString()} ETB
+                        {selectedTable.deposit.toLocaleString()}{" "}
+                        ETB
                       </span>
 
                       <span className="ml-1 text-[10px] text-[#717976]">
@@ -2234,7 +2557,11 @@ export default function HomePage() {
                     </div>
 
                     <span className="flex items-center gap-1 text-xs font-semibold text-[#43655c]">
-                      <Icon name="verified" className="h-[15px] w-[15px]" />
+                      <Icon
+                        name="verified"
+                        className="h-[15px] w-[15px]"
+                      />
+
                       Reservation Ready
                     </span>
                   </div>
@@ -2242,20 +2569,29 @@ export default function HomePage() {
                   <div className="mt-4 flex gap-2">
                     <button
                       type="button"
-                      disabled={selectedTable.status !== "available"}
+                      disabled={
+                        selectedTable.status !==
+                        "available"
+                      }
                       onClick={() => {
                         setModalOpen(false);
 
-                        const restaurant = restaurants[0];
+                        const restaurant =
+                          restaurants[0];
 
                         if (!restaurant) return;
 
-                        const params = new URLSearchParams({
-                          date: reservationDate,
-                          time: reservationTime,
-                          party_size: String(partySize),
-                          table_id: String(selectedTable.id),
-                        });
+                        const params =
+                          new URLSearchParams({
+                            date: reservationDate,
+                            time: reservationTime,
+                            party_size:
+                              String(partySize),
+                            table_id:
+                              String(
+                                selectedTable.id
+                              ),
+                          });
 
                         router.push(
                           `/restaurants/${restaurant.id}/reserve?${params.toString()}`
@@ -2263,14 +2599,17 @@ export default function HomePage() {
                       }}
                       className="flex-1 rounded-xl bg-[#01261f] py-3 text-sm font-bold text-white transition hover:bg-[#1a3c34] disabled:cursor-not-allowed disabled:bg-[#c1c8c4]"
                     >
-                      {selectedTable.status === "available"
+                      {selectedTable.status ===
+                      "available"
                         ? "Continue Reservation"
                         : "Unavailable"}
                     </button>
 
                     <button
                       type="button"
-                      onClick={() => setModalOpen(false)}
+                      onClick={() =>
+                        setModalOpen(false)
+                      }
                       className="rounded-xl border border-[#934a2d] px-4 text-sm font-semibold text-[#934a2d] transition hover:bg-[#fff7f3]"
                     >
                       Close
