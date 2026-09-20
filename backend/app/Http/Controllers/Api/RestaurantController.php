@@ -112,23 +112,23 @@ class RestaurantController extends Controller
     /**
      * Display a single approved restaurant.
      */
-    public function show(Restaurant $restaurant): JsonResponse
-    {
-        if (
-            $restaurant->state !== 'active' ||
-            $restaurant->approved !== 'approved'
-        ) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Restaurant not found.',
-            ], 404);
-        }
-
+public function show(Restaurant $restaurant): JsonResponse
+{
+    if (
+        !$restaurant->is_active ||
+        !$restaurant->approved
+    ) {
         return response()->json([
-            'success' => true,
-            'data' => $restaurant,
-        ]);
+            'success' => false,
+            'message' => 'Restaurant not found.',
+        ], 404);
     }
+
+    return response()->json([
+        'success' => true,
+        'data' => $restaurant,
+    ]);
+}
 
     /**
      * Update restaurant.
