@@ -3,6 +3,58 @@ import { apiFetch } from "./api";
 
 export type UserRole = "diner" | "staff" | "admin";
 
+
+
+export interface RegisterRestaurant {
+  name: string;
+  description?: string;
+  cuisine_type?: string;
+  price_range?: string;
+  phone?: string;
+  email?: string;
+  website?: string;
+  address: string;
+  city: string;
+  area?: string;
+  state?: string;
+  latitude?: number | null;
+  longitude?: number | null;
+}
+
+export async function register(
+  name: string,
+  email: string,
+  password: string,
+  role: "diner" | "staff",
+  _restaurantId: number | null,
+  passwordConfirmation: string,
+  restaurant?: RegisterRestaurant,
+) {
+  const payload: Record<string, unknown> = {
+    name,
+    email,
+    password,
+    password_confirmation: passwordConfirmation,
+    role,
+  };
+
+  if (role === "staff") {
+    payload.restaurant = restaurant;
+  }
+
+  return apiFetch(
+    "/auth/register",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify(payload),
+    },
+  );
+}
+
 export interface User {
   id: number;
   name: string;
@@ -142,30 +194,7 @@ export const login = async (
   return user;
 };
 
-/**
- * Register a new user.
- */
-export const register = async (
-  name: string,
-  email: string,
-  password: string,
-  role: string
-) => {
-  const response = await apiFetch(
-    "/auth/register",
-    {
-      method: "POST",
-      body: JSON.stringify({
-        name,
-        email,
-        password,
-        role,
-      }),
-    }
-  );
 
-  return response;
-};
 
 /**
  * Logout current user.
